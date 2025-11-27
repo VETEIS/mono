@@ -126,7 +126,7 @@ export default function DebtsPage() {
                 {recentTransactions.map((tx, index) => (
                   <Link key={tx.id} href={`/transactions/${tx.id}`}>
                     <div className={`grid grid-cols-[55px_1fr_45px_90px] items-center gap-2 sm:gap-3 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex items-center">
                         <span
                           className={`text-[10px] font-semibold px-1 py-0.5 rounded-lg whitespace-nowrap inline-block ${
                             tx.type === "receive"

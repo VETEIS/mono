@@ -69,7 +69,7 @@ export default function WalletTransactionsPage() {
                   href={`/wallet/transactions/${tx.id}`}
                   className={`relative grid grid-cols-[35px_1fr_28px_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < walletTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
                 >
-                  <div className="w-[35px]">
+                  <div className="w-[35px] flex items-center">
                     <span
                       className={`text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-lg whitespace-nowrap inline-block ${
                         tx.type === "receive"
