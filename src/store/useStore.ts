@@ -27,10 +27,10 @@ interface StoreState {
   addGroup: (group: Omit<Group, "id">) => void;
   updateGroup: (id: string, data: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
-  addExpense: (groupId: string, expense: Omit<Expense, "id">) => void;
+  addExpense: (groupId: string, expense: Omit<Expense, "id" | "groupId">) => void;
   updateExpense: (groupId: string, expenseId: string, data: Partial<Expense>) => void;
   deleteExpense: (groupId: string, expenseId: string) => void;
-  addSettlement: (groupId: string, settlement: Omit<Settlement, "id">) => void;
+  addSettlement: (groupId: string, settlement: Omit<Settlement, "id" | "groupId">) => void;
   updateSettlement: (groupId: string, settlementId: string, data: Partial<Settlement>) => void;
   deleteSettlement: (groupId: string, settlementId: string) => void;
   addGroupMember: (groupId: string, member: Omit<GroupMember, "id" | "createdAt">) => void;
@@ -232,6 +232,7 @@ export const useStore = create<StoreState>()(
       addExpense: (groupId, expenseData) => {
         const newExpense: Expense = {
           ...expenseData,
+          groupId: groupId, // Always use the groupId parameter to ensure consistency
           id: crypto.randomUUID(),
         };
         set((state) => ({
@@ -273,6 +274,7 @@ export const useStore = create<StoreState>()(
       addSettlement: (groupId, settlementData) => {
         const newSettlement: Settlement = {
           ...settlementData,
+          groupId: groupId, // Always use the groupId parameter to ensure consistency
           id: crypto.randomUUID(),
         };
         set((state) => ({

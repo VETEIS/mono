@@ -117,7 +117,7 @@ export default function NewExpensePage() {
 
   const previewNets = useMemo(() => {
     if (!group || !amountNum) return [];
-    const tempExpense = {
+    const tempExpense: Expense = {
       id: "temp",
       groupId: group.id,
       description,
@@ -156,7 +156,6 @@ export default function NewExpensePage() {
     if (Object.keys(splitBetween).length === 0) return;
 
     addExpense(group.id, {
-      groupId: group.id,
       description: description.trim(),
       amount: amountNum,
       paidBy,
