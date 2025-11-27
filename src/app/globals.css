@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --yellow-accent: #FCD34D;
+  --yellow-accent-hover: #FBBF24;
+  --yellow-accent-light: #FEF3C7;
+}
+
+body {
+  @apply bg-[#1C1C1E] text-gray-100 antialiased;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .yellow-accent {
+    color: var(--yellow-accent);
+  }
+  
+  .yellow-bg {
+    background-color: var(--yellow-accent);
+  }
+  
+  .yellow-border {
+    border-color: var(--yellow-accent);
+  }
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+

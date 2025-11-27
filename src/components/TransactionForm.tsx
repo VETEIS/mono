@@ -1,0 +1,186 @@
+"use client";
+
+import { useState, FormEvent } from "react";
+import type { Transaction, TransactionType } from "@/types";
+import { formatDateInput } from "@/utils/format";
+import { ChevronDown } from "lucide-react";
+
+interface TransactionFormProps {
+  initialData?: Transaction;
+  onSubmit: (data: Omit<Transaction, "id">) => void;
+  onCancel?: () => void;
+  isWallet?: boolean; // If true, use "in"/"out" and auto-set date
+}
+
+export default function TransactionForm({
+  initialData,
+  onSubmit,
+  onCancel,
+  isWallet = false,
+}: TransactionFormProps) {
+  const [type, setType] = useState<TransactionType>(
+    initialData?.type || (isWallet ? "pay" : "receive")
+  );
+  const [label, setLabel] = useState(initialData?.label || "");
+  const [amount, setAmount] = useState(
+    initialData?.amount?.toString() || ""
+  );
+  const [category, setCategory] = useState(initialData?.category || "");
+  const [date, setDate] = useState(
+    initialData?.date ? formatDateInput(initialData.date) : formatDateInput(new Date().toISOString())
+  );
+  const [notes, setNotes] = useState(initialData?.notes || "");
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!label.trim() || !amount) return;
+    if (!isWallet && !date) return;
+
+    onSubmit({
+      type,
+      label: label.trim(),
+      amount: parseFloat(amount),
+      category: category.trim() || undefined,
+      date: isWallet ? new Date().toISOString() : new Date(date).toISOString(),
+      notes: notes.trim() || undefined,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+          type
+        </label>
+        <div className="relative">
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as TransactionType)}
+            className="w-full pl-4 pr-12 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all appearance-none"
+          >
+            {isWallet ? (
+              <>
+                <option value="receive" className="bg-[#2C2C2E]">in</option>
+                <option value="pay" className="bg-[#2C2C2E]">out</option>
+              </>
+            ) : (
+              <>
+                <option value="receive" className="bg-[#2C2C2E]">receive</option>
+                <option value="pay" className="bg-[#2C2C2E]">pay</option>
+              </>
+            )}
+          </select>
+          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+          label <span className="text-[#FCD34D]">*</span>
+        </label>
+        <input
+          type="text"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          required
+          className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+          placeholder="transaction label"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+          amount <span className="text-[#FCD34D]">*</span>
+        </label>
+        <input
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          min="0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+          className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+          category
+        </label>
+        {isWallet ? (
+          <div className="relative">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full pl-4 pr-12 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all appearance-none"
+            >
+              <option value="" className="bg-[#2C2C2E]">select category</option>
+              <option value="food" className="bg-[#2C2C2E]">food</option>
+              <option value="things" className="bg-[#2C2C2E]">things</option>
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+          </div>
+        ) : (
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            placeholder="optional category"
+          />
+        )}
+      </div>
+
+      {!isWallet && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+            date <span className="text-[#FCD34D]">*</span>
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+          />
+        </div>
+      )}
+
+      {!isWallet && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+            notes
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] resize-none transition-all"
+            placeholder="optional notes"
+          />
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-3">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 px-5 py-3.5 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-2xl transition-all font-semibold active:scale-95"
+          >
+            cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          className="flex-1 px-5 py-3.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-2xl transition-all font-bold active:scale-95 shadow-lg shadow-[#FCD34D]/20"
+        >
+          {initialData ? "update" : "add"} transaction
+        </button>
+      </div>
+    </form>
+  );
+}
+
