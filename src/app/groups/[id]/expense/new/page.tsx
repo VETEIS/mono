@@ -156,6 +156,7 @@ export default function NewExpensePage() {
     if (Object.keys(splitBetween).length === 0) return;
 
     addExpense(group.id, {
+      groupId: group.id,
       description: description.trim(),
       amount: amountNum,
       paidBy,
