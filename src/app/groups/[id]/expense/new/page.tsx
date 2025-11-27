@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import { formatCurrency } from "@/utils/format";
 import { computeNets } from "@/utils/groups";
-import type { GroupMember } from "@/types";
+import type { GroupMember, Expense } from "@/types";
 
 export default function NewExpensePage() {
   const params = useParams();
