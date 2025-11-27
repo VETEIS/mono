@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, Receipt, CreditCard, Settings } from "lucide-react";
+import { Wallet, Receipt, CreditCard, Settings, Users } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -10,6 +10,7 @@ export default function Navbar() {
   const navItems = [
     { href: "/", icon: Wallet, label: "wallet" },
     { href: "/debts", icon: CreditCard, label: "debts" },
+    { href: "/groups", icon: Users, label: "groups" },
     { href: "/settings", icon: Settings, label: "settings" },
   ];
 

@@ -1,0 +1,116 @@
+"use client";
+
+import { useState } from "react";
+import { useStore } from "@/store/useStore";
+import Header from "@/components/Header";
+import Card from "@/components/Card";
+import Modal from "@/components/Modal";
+import Link from "next/link";
+import { Plus, Users, Trash2 } from "lucide-react";
+
+export default function GroupsPage() {
+  const groups = useStore((state) => state.groups);
+  const deleteGroup = useStore((state) => state.deleteGroup);
+  const [deleteModal, setDeleteModal] = useState<string | null>(null);
+
+  const handleDelete = (groupId: string) => {
+    deleteGroup(groupId);
+    setDeleteModal(null);
+  };
+
+  return (
+    <div className="min-h-screen pb-20">
+      <Header
+        title="groups"
+        action={
+          <Link
+            href="/groups/new"
+            className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
+          >
+            <Plus className="w-6 h-6 text-[#FCD34D]" />
+          </Link>
+        }
+      />
+
+      <main className="p-5">
+        {groups.length === 0 ? (
+          <Card>
+            <div className="text-gray-400 text-center py-10">
+              <Users className="w-16 h-16 mx-auto mb-4 text-gray-500" />
+              <p className="text-lg mb-2">no groups yet</p>
+              <p className="text-sm mb-4">
+                create a group to start tracking shared expenses
+              </p>
+              <Link
+                href="/groups/new"
+                className="inline-block px-6 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95"
+              >
+                create your first group
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {groups.map((group) => {
+              return (
+                <Card key={group.id} hover>
+                  <Link href={`/groups/${group.id}`} className="block">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-50 mb-1">
+                        {group.name}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <span>{group.members.length} members</span>
+                        <span>•</span>
+                        <span>{group.expenses.length} expenses</span>
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDeleteModal(group.id);
+                      }}
+                      className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      delete group
+                    </button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal !== null}
+        onClose={() => setDeleteModal(null)}
+        title="delete group"
+      >
+        <p className="text-gray-300 mb-5">
+          are you sure you want to delete this group? this action cannot be undone. all expenses, settlements, and member data will be permanently deleted.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteModal(null)}
+            className="flex-1 px-5 py-3 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-2xl transition-all font-semibold active:scale-95"
+          >
+            cancel
+          </button>
+          <button
+            onClick={() => deleteModal && handleDelete(deleteModal)}
+            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >
+            delete
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+

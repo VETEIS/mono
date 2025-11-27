@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Transaction, Note, AppData, MonthlyArchive } from "@/types";
+import type { Transaction, Note, AppData, MonthlyArchive, Group, GroupMember, Expense, Settlement } from "@/types";
 
 interface StoreState {
   transactions: Transaction[];
@@ -10,6 +10,7 @@ interface StoreState {
   budget: number;
   monthlyArchives: MonthlyArchive[];
   lastArchiveCheck: string | null; // ISO string of last check date
+  groups: Group[];
   addTransaction: (tx: Omit<Transaction, "id">) => void;
   updateTransaction: (id: string, data: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
@@ -22,6 +23,21 @@ interface StoreState {
   importData: (data: AppData) => void;
   exportData: () => AppData;
   resetAll: () => void;
+  // Groups
+  addGroup: (group: Omit<Group, "id">) => void;
+  updateGroup: (id: string, data: Partial<Group>) => void;
+  deleteGroup: (id: string) => void;
+  addExpense: (groupId: string, expense: Omit<Expense, "id">) => void;
+  updateExpense: (groupId: string, expenseId: string, data: Partial<Expense>) => void;
+  deleteExpense: (groupId: string, expenseId: string) => void;
+  addSettlement: (groupId: string, settlement: Omit<Settlement, "id">) => void;
+  updateSettlement: (groupId: string, settlementId: string, data: Partial<Settlement>) => void;
+  deleteSettlement: (groupId: string, settlementId: string) => void;
+  addGroupMember: (groupId: string, member: Omit<GroupMember, "id" | "createdAt">) => void;
+  updateGroupMember: (groupId: string, memberId: string, data: Partial<GroupMember>) => void;
+  removeGroupMember: (groupId: string, memberId: string) => void;
+  exportGroup: (groupId: string) => string;
+  importGroup: (groupJson: string) => void;
 }
 
 // Hydration-safe store
@@ -33,6 +49,7 @@ export const useStore = create<StoreState>()(
       budget: 0,
       monthlyArchives: [],
       lastArchiveCheck: null,
+      groups: [],
 
       addTransaction: (tx) => {
         const newTx: Transaction = {
@@ -163,6 +180,7 @@ export const useStore = create<StoreState>()(
           notes: data.notes || [],
           budget: data.budget || 0,
           monthlyArchives: data.monthlyArchives || [],
+          groups: data.groups || [],
         });
       },
 
@@ -173,6 +191,7 @@ export const useStore = create<StoreState>()(
           notes: state.notes,
           budget: state.budget,
           monthlyArchives: state.monthlyArchives,
+          groups: state.groups,
         };
       },
 
@@ -183,11 +202,193 @@ export const useStore = create<StoreState>()(
           budget: 0,
           monthlyArchives: [],
           lastArchiveCheck: null,
+          groups: [],
         });
+      },
+
+      // Groups actions
+      addGroup: (groupData) => {
+        const newGroup: Group = {
+          ...groupData,
+          id: crypto.randomUUID(),
+        };
+        set((state) => ({
+          groups: [...state.groups, newGroup],
+        }));
+      },
+
+      updateGroup: (id, data) => {
+        set((state) => ({
+          groups: state.groups.map((g) => (g.id === id ? { ...g, ...data } : g)),
+        }));
+      },
+
+      deleteGroup: (id) => {
+        set((state) => ({
+          groups: state.groups.filter((g) => g.id !== id),
+        }));
+      },
+
+      addExpense: (groupId, expenseData) => {
+        const newExpense: Expense = {
+          ...expenseData,
+          id: crypto.randomUUID(),
+        };
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? { ...g, expenses: [...g.expenses, newExpense] }
+              : g
+          ),
+        }));
+      },
+
+      updateExpense: (groupId, expenseId, data) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? {
+                  ...g,
+                  expenses: g.expenses.map((e) =>
+                    e.id === expenseId
+                      ? { ...e, ...data, editedAt: new Date().toISOString() }
+                      : e
+                  ),
+                }
+              : g
+          ),
+        }));
+      },
+
+      deleteExpense: (groupId, expenseId) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? { ...g, expenses: g.expenses.filter((e) => e.id !== expenseId) }
+              : g
+          ),
+        }));
+      },
+
+      addSettlement: (groupId, settlementData) => {
+        const newSettlement: Settlement = {
+          ...settlementData,
+          id: crypto.randomUUID(),
+        };
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? { ...g, settlements: [...g.settlements, newSettlement] }
+              : g
+          ),
+        }));
+      },
+
+      updateSettlement: (groupId, settlementId, data) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? {
+                  ...g,
+                  settlements: g.settlements.map((s) =>
+                    s.id === settlementId ? { ...s, ...data } : s
+                  ),
+                }
+              : g
+          ),
+        }));
+      },
+
+      deleteSettlement: (groupId, settlementId) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? {
+                  ...g,
+                  settlements: g.settlements.filter((s) => s.id !== settlementId),
+                }
+              : g
+          ),
+        }));
+      },
+
+      addGroupMember: (groupId, memberData) => {
+        const newMember: GroupMember = {
+          ...memberData,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? { ...g, members: [...g.members, newMember] }
+              : g
+          ),
+        }));
+      },
+
+      updateGroupMember: (groupId, memberId, data) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? {
+                  ...g,
+                  members: g.members.map((m) =>
+                    m.id === memberId ? { ...m, ...data } : m
+                  ),
+                }
+              : g
+          ),
+        }));
+      },
+
+      removeGroupMember: (groupId, memberId) => {
+        set((state) => ({
+          groups: state.groups.map((g) =>
+            g.id === groupId
+              ? { ...g, members: g.members.filter((m) => m.id !== memberId) }
+              : g
+          ),
+        }));
+      },
+
+      exportGroup: (groupId) => {
+        const state = get();
+        const group = state.groups.find((g) => g.id === groupId);
+        if (!group) return "";
+        return JSON.stringify(group, null, 2);
+      },
+
+      importGroup: (groupJson) => {
+        try {
+          const group: Group = JSON.parse(groupJson);
+          // Ensure all IDs are regenerated to avoid conflicts
+          group.id = crypto.randomUUID();
+          group.members = group.members.map((m) => ({
+            ...m,
+            id: crypto.randomUUID(),
+            createdAt: m.createdAt || new Date().toISOString(),
+          }));
+          group.expenses = group.expenses.map((e) => ({
+            ...e,
+            id: crypto.randomUUID(),
+            groupId: group.id,
+          }));
+          group.settlements = group.settlements.map((s) => ({
+            ...s,
+            id: crypto.randomUUID(),
+            groupId: group.id,
+          }));
+          set((state) => ({
+            groups: [...state.groups, group],
+          }));
+        } catch (error) {
+          console.error("Failed to import group:", error);
+        }
       },
     }),
     {
-      name: "money_manager_data_v1",
+      name: "money_manager_data_v2",
       storage: createJSONStorage(() => localStorage),
     }
   )
