@@ -12,10 +12,12 @@ export default function DebtsPage() {
   const transactions = useStore((state) => state.transactions);
 
   const { totalReceive, totalPay, balance } = useMemo(() => {
-    const receive = transactions
+    // Exclude wallet transactions - debts page is separate from wallet
+    const nonWalletTransactions = transactions.filter((tx) => !tx.wallet);
+    const receive = nonWalletTransactions
       .filter((tx) => tx.type === "receive")
       .reduce((sum, tx) => sum + tx.amount, 0);
-    const pay = transactions
+    const pay = nonWalletTransactions
       .filter((tx) => tx.type === "pay")
       .reduce((sum, tx) => sum + tx.amount, 0);
     return {
@@ -26,7 +28,9 @@ export default function DebtsPage() {
   }, [transactions]);
 
   const recentTransactions = useMemo(() => {
+    // Exclude wallet transactions - debts page is separate from wallet
     return [...transactions]
+      .filter((tx) => !tx.wallet)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
   }, [transactions]);
@@ -104,8 +108,8 @@ export default function DebtsPage() {
             </Link>
           </div>
 
-          {recentTransactions.length === 0 ? (
-            <Card>
+          <Card className="h-[400px] overflow-y-auto">
+            {recentTransactions.length === 0 ? (
               <div className="text-gray-400 text-center py-8">
                 <p>no transactions yet.</p>
                 <p className="mt-2">
@@ -114,13 +118,11 @@ export default function DebtsPage() {
                   </Link>
                 </p>
               </div>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {recentTransactions.map((tx) => (
-                <Link key={tx.id} href={`/transactions/${tx.id}`}>
-                  <Card hover>
-                    <div className="flex items-center justify-between">
+            ) : (
+              <div className="space-y-3">
+                {recentTransactions.map((tx) => (
+                  <Link key={tx.id} href={`/transactions/${tx.id}`}>
+                    <div className="flex items-center justify-between pb-3 border-b border-[#3A3A3C] last:border-b-0 hover:opacity-80 transition-opacity">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <span
@@ -154,11 +156,11 @@ export default function DebtsPage() {
                         {formatCurrency(tx.amount)}
                       </p>
                     </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
         </div>
       </main>
     </div>

@@ -6,7 +6,7 @@ import { formatDate } from "@/utils/format";
 import Card from "@/components/Card";
 import Header from "@/components/Header";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import Modal from "@/components/Modal";
 
 export default function NotesPage() {
@@ -29,7 +29,15 @@ export default function NotesPage() {
     <div className="min-h-screen pb-20">
       <Header
         title="notes"
-        showNotesButton={false}
+        backHref="/debts"
+        action={
+          <Link
+            href="/notes/new"
+            className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
+          >
+            <Plus className="w-6 h-6 text-[#FCD34D]" />
+          </Link>
+        }
       />
 
       <main className="p-5 space-y-3">

@@ -44,8 +44,10 @@ function TransactionsContent() {
   };
 
   const filteredTransactions = useMemo(() => {
-    if (filter === "all") return transactions;
-    return transactions.filter((tx) => tx.type === filter);
+    // Exclude wallet transactions - transactions page is separate from wallet
+    const nonWalletTransactions = transactions.filter((tx) => !tx.wallet);
+    if (filter === "all") return nonWalletTransactions;
+    return nonWalletTransactions.filter((tx) => tx.type === filter);
   }, [transactions, filter]);
 
   const sortedTransactions = useMemo(() => {
@@ -63,6 +65,7 @@ function TransactionsContent() {
     <div className="min-h-screen pb-20">
       <Header
         title="transactions"
+        backHref="/debts"
         action={
           <Link
             href="/transactions/new"
@@ -203,7 +206,7 @@ export default function TransactionsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen pb-20">
-        <Header title="transactions" />
+        <Header title="transactions" backHref="/debts" />
         <main className="p-5">
           <Card>
             <p className="text-gray-400 text-center py-8">loading...</p>
