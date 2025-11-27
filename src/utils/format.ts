@@ -7,11 +7,9 @@ export const formatCurrency = (amount: number): string => {
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
+  return `${month}/${day}`;
 };
 
 export const formatDateInput = (dateString: string): string => {

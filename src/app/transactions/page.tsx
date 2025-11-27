@@ -63,18 +63,7 @@ function TransactionsContent() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header
-        title="transactions"
-        backHref="/debts"
-        action={
-          <Link
-            href="/transactions/new"
-            className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-          >
-            <Plus className="w-6 h-6 text-[#FCD34D]" />
-          </Link>
-        }
-      />
+      <Header title="transactions" backHref="/debts" />
 
       <main className="p-5 space-y-5">
         {/* Filter */}
@@ -102,8 +91,8 @@ function TransactionsContent() {
         </div>
 
         {/* Transactions List */}
-        {sortedTransactions.length === 0 ? (
-          <Card>
+        <Card>
+          {sortedTransactions.length === 0 ? (
             <div className="text-gray-400 text-center py-10">
               <p>no transactions found.</p>
               <p className="mt-2">
@@ -112,43 +101,38 @@ function TransactionsContent() {
                 </Link>
               </p>
             </div>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {sortedTransactions.map((tx) => (
-              <Card key={tx.id} hover>
-                <div className="flex items-center justify-between">
-                  <Link
-                    href={`/transactions/${tx.id}`}
-                    className="flex-1"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-xl ${
-                          tx.type === "receive"
-                            ? "bg-green-500/20 text-green-400"
-                            : "bg-red-500/20 text-red-400"
-                        }`}
-                      >
-                        {tx.type === "receive" ? "receive" : "pay"}
-                      </span>
-                      {tx.category && (
-                        <span className="text-xs text-gray-500 font-medium">
-                          {tx.category}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-50 font-semibold mb-1">{tx.label}</p>
-                    <p className="text-xs text-gray-400">{formatDate(tx.date)}</p>
-                    {tx.notes && (
-                      <p className="text-xs text-gray-500 mt-1.5 line-clamp-1">
-                        {tx.notes}
-                      </p>
-                    )}
-                  </Link>
-                  <div className="flex items-center gap-3 ml-4">
+          ) : (
+            <div className="space-y-0 overflow-hidden">
+              {sortedTransactions.map((tx, index) => (
+                <Link
+                  key={tx.id}
+                  href={`/transactions/${tx.id}`}
+                  className={`relative grid grid-cols-[55px_1fr_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < sortedTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
+                >
+                  <div className="min-w-0">
+                    <span
+                      className={`text-[10px] font-semibold px-1 py-0.5 rounded-lg whitespace-nowrap inline-block ${
+                        tx.type === "receive"
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-red-500/20 text-red-400"
+                      }`}
+                    >
+                      {tx.type === "receive" ? "receive" : "pay"}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-gray-50 font-medium text-xs sm:text-sm truncate">
+                      {tx.label}
+                    </p>
+                  </div>
+                  <div className="w-[40px] text-right">
+                    <p className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
+                      {formatDate(tx.date)}
+                    </p>
+                  </div>
+                  <div className="w-[90px] text-right">
                     <p
-                      className={`text-xl font-bold ${
+                      className={`text-sm sm:text-base font-bold whitespace-nowrap ${
                         tx.type === "receive"
                           ? "text-green-400"
                           : "text-red-400"
@@ -157,21 +141,22 @@ function TransactionsContent() {
                       {tx.type === "receive" ? "+" : "-"}
                       {formatCurrency(tx.amount)}
                     </p>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setDeleteModal(tx.id);
-                      }}
-                      className="p-2 hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
-                    >
-                      <Trash2 className="w-5 h-5 text-red-400" />
-                    </button>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDeleteModal(tx.id);
+                    }}
+                    className="relative z-10 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 justify-self-end"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                  </button>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Card>
       </main>
 
       {/* Delete Confirmation Modal */}

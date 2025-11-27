@@ -37,7 +37,6 @@ export default function Header({ title, backHref, action, leftAction, titleRight
         </div>
         <div className="flex items-center gap-3">
           {titleRight && <h1 className="text-2xl font-bold text-gray-50 leading-none">{title}</h1>}
-          {action && <div>{action}</div>}
           {showNotesButton && isDebtsPage && (
             <Link
               href="/notes"
@@ -51,6 +50,7 @@ export default function Header({ title, backHref, action, leftAction, titleRight
               )}
             </Link>
           )}
+          {action && <div className="flex items-center">{action}</div>}
         </div>
       </div>
     </header>

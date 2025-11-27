@@ -21,13 +21,13 @@ export default function EditTransactionPage() {
     if (tx) {
       setTransaction(tx);
     } else {
-      router.push("/transactions");
+      router.push("/debts");
     }
   }, [id, transactions, router]);
 
   const handleSubmit = (data: Omit<Transaction, "id">) => {
     updateTransaction(id, data);
-    router.push("/transactions");
+    router.push("/debts");
   };
 
   if (!transaction) {

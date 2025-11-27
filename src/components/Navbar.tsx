@@ -10,7 +10,6 @@ export default function Navbar() {
   const navItems = [
     { href: "/", icon: Wallet, label: "wallet" },
     { href: "/debts", icon: CreditCard, label: "debts" },
-    { href: "/transactions", icon: Receipt, label: "transactions" },
     { href: "/settings", icon: Settings, label: "settings" },
   ];
 

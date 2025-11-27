@@ -45,80 +45,83 @@ export default function WalletTransactionsPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header title="wallet transactions" backHref="/" />
+      <Header title="records" backHref="/" />
 
-      <main className="p-5 space-y-3">
-        {walletTransactions.length === 0 ? (
-              <Card>
-                <div className="text-gray-400 text-center py-10">
-                  <p>no wallet transactions found.</p>
-                  <p className="mt-2">
-                    <Link
-                      href="/wallet/new"
-                      className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium"
-                    >
-                      add your first expense
-                    </Link>
-                  </p>
-                </div>
-              </Card>
-            ) : (
-              walletTransactions.map((tx) => (
-            <Card key={tx.id} hover>
-              <div className="flex items-center justify-between">
+      <main className="p-5">
+        <Card>
+          {walletTransactions.length === 0 ? (
+            <div className="text-gray-400 text-center py-10">
+              <p>no records found.</p>
+              <p className="mt-2">
                 <Link
-                  href={`/wallet/transactions/${tx.id}`}
-                  className="flex-1"
+                  href="/wallet/new"
+                  className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium"
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  add your first expense
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-0 overflow-hidden">
+              {walletTransactions.map((tx, index) => (
+                <Link
+                  key={tx.id}
+                  href={`/wallet/transactions/${tx.id}`}
+                  className={`relative grid grid-cols-[35px_1fr_28px_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < walletTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
+                >
+                  <div className="w-[35px]">
                     <span
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-xl ${
+                      className={`text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-lg whitespace-nowrap inline-block ${
                         tx.type === "receive"
                           ? "bg-green-500/20 text-green-400"
                           : "bg-red-500/20 text-red-400"
                       }`}
                     >
-                      {tx.type === "receive" ? "income" : "expense"}
+                      {tx.type === "receive" ? "in" : "out"}
                     </span>
-                    {tx.category && (
-                      <span className="text-xs text-gray-500 font-medium">
-                        {tx.category}
-                      </span>
-                    )}
                   </div>
-                  <p className="text-gray-50 font-semibold mb-1">{tx.label}</p>
-                  <p className="text-xs text-gray-400">{formatDate(tx.date)}</p>
-                  {tx.notes && (
-                    <p className="text-xs text-gray-500 mt-1.5 line-clamp-1">
-                      {tx.notes}
+                  <div className="min-w-0">
+                    <p className="text-gray-50 font-medium text-xs sm:text-sm truncate">
+                      {tx.label}
                     </p>
-                  )}
-                </Link>
-                <div className="flex items-center gap-3 ml-4">
-                  <p
-                    className={`text-xl font-bold ${
-                      tx.type === "receive"
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {tx.type === "receive" ? "+" : "-"}
-                    {formatCurrency(tx.amount)}
-                  </p>
+                  </div>
+                  <div className="w-[28px]">
+                    <span className="text-[10px] text-gray-500 font-medium truncate block">
+                      {tx.category || "-"}
+                    </span>
+                  </div>
+                  <div className="w-[40px] text-right">
+                    <p className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
+                      {formatDate(tx.date)}
+                    </p>
+                  </div>
+                  <div className="w-[90px] text-right">
+                    <p
+                      className={`text-sm sm:text-base font-bold whitespace-nowrap ${
+                        tx.type === "receive"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {tx.type === "receive" ? "+" : "-"}
+                      {formatCurrency(tx.amount)}
+                    </p>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       setDeleteModal(tx.id);
                     }}
-                    className="p-2 hover:bg-red-500/10 rounded-xl transition-colors active:scale-95"
+                    className="relative z-10 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 justify-self-end"
                   >
-                    <Trash2 className="w-5 h-5 text-red-400" />
+                    <Trash2 className="w-4 h-4 text-red-400" />
                   </button>
-                </div>
-              </div>
-            </Card>
-              ))
-            )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </Card>
       </main>
 
       {/* Delete Confirmation Modal */}

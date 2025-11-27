@@ -37,12 +37,15 @@ export default function DebtsPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header title="debts" showNotesButton={true} />
+      <Header
+        title="debts"
+        showNotesButton={true}
+      />
 
       <main className="p-5 space-y-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 gap-4">
-          <Link href="/transactions?filter=receive">
+          <Link href="/transactions/new?type=receive">
             <Card hover>
               <div className="flex items-center justify-between">
                 <div>
@@ -58,7 +61,7 @@ export default function DebtsPage() {
             </Card>
           </Link>
 
-          <Link href="/transactions?filter=pay">
+          <Link href="/transactions/new?type=pay">
             <Card hover>
               <div className="flex items-center justify-between">
                 <div>
@@ -108,7 +111,7 @@ export default function DebtsPage() {
             </Link>
           </div>
 
-          <Card className="h-[400px] overflow-y-auto">
+          <Card>
             {recentTransactions.length === 0 ? (
               <div className="text-gray-400 text-center py-8">
                 <p>no transactions yet.</p>
@@ -119,42 +122,43 @@ export default function DebtsPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {recentTransactions.map((tx) => (
+              <div className="space-y-0 overflow-hidden">
+                {recentTransactions.map((tx, index) => (
                   <Link key={tx.id} href={`/transactions/${tx.id}`}>
-                    <div className="flex items-center justify-between pb-3 border-b border-[#3A3A3C] last:border-b-0 hover:opacity-80 transition-opacity">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-1 rounded-xl ${
-                              tx.type === "receive"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
-                            }`}
-                          >
-                            {tx.type === "receive" ? "receive" : "pay"}
-                          </span>
-                          {tx.category && (
-                            <span className="text-xs text-gray-500 font-medium">
-                              {tx.category}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-gray-50 font-semibold mb-1">{tx.label}</p>
-                        <p className="text-xs text-gray-400">
+                    <div className={`grid grid-cols-[55px_1fr_45px_90px] items-center gap-2 sm:gap-3 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
+                      <div className="min-w-0">
+                        <span
+                          className={`text-[10px] font-semibold px-1 py-0.5 rounded-lg whitespace-nowrap inline-block ${
+                            tx.type === "receive"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-red-500/20 text-red-400"
+                          }`}
+                        >
+                          {tx.type === "receive" ? "receive" : "pay"}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-gray-50 font-medium text-xs sm:text-sm truncate">
+                          {tx.label}
+                        </p>
+                      </div>
+                      <div className="w-[45px] text-right">
+                        <p className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
                           {formatDate(tx.date)}
                         </p>
                       </div>
-                      <p
-                        className={`text-xl font-bold ${
-                          tx.type === "receive"
-                            ? "text-green-400"
-                            : "text-red-400"
-                        }`}
-                      >
-                        {tx.type === "receive" ? "+" : "-"}
-                        {formatCurrency(tx.amount)}
-                      </p>
+                      <div className="w-[90px] text-right">
+                        <p
+                          className={`text-sm sm:text-base font-bold whitespace-nowrap ${
+                            tx.type === "receive"
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {tx.type === "receive" ? "+" : "-"}
+                          {formatCurrency(tx.amount)}
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 ))}
