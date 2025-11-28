@@ -21,21 +21,95 @@ function GroupViewContent() {
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   useEffect(() => {
+    // Check for chunked data first (for very long groups)
+    const chunksParam = searchParams.get("chunks");
+    if (chunksParam) {
+      const numChunks = parseInt(chunksParam, 10);
+      if (numChunks > 0) {
+        // Reconstruct the encoded data from chunks
+        const chunks: string[] = [];
+        for (let i = 0; i < numChunks; i++) {
+          const chunk = searchParams.get(`data${i}`);
+          if (chunk) {
+            chunks.push(chunk);
+          }
+        }
+        
+        if (chunks.length === numChunks) {
+          const encodedData = chunks.join("");
+          try {
+            const decodedGroup = decodeGroupFromShare(encodedData);
+            if (decodedGroup) {
+              const sharedGroup: Group = {
+                ...decodedGroup,
+                isShared: true,
+                sharedFromGroupId: decodedGroup.id,
+                lastSyncedAt: new Date().toISOString(),
+              };
+              setGroup(sharedGroup);
+              
+              const existingGroup = groups.find((g) => g.id === decodedGroup.id || (g.isShared && g.sharedFromGroupId === decodedGroup.id));
+              if (!existingGroup) {
+                addGroup(sharedGroup);
+              } else {
+                updateGroup(existingGroup.id, {
+                  ...sharedGroup,
+                  id: existingGroup.id,
+                });
+              }
+              return;
+            }
+          } catch (err) {
+            console.error("Error decoding chunked data:", err);
+          }
+        }
+      }
+    }
+    
+    // Standard URL-encoded data (single parameter)
     const encodedData = searchParams.get("data");
-    if (!encodedData) {
-      setError("invalid share link");
+    
+    // Also try getting from window.location as fallback
+    let rawData = encodedData;
+    if (!rawData && typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      rawData = urlParams.get("data");
+    }
+    
+    // Last resort: try parsing from hash or full URL
+    if (!rawData && typeof window !== "undefined") {
+      const fullUrl = window.location.href;
+      const match = fullUrl.match(/[?&]data=([^&]+)/);
+      if (match) {
+        rawData = match[1];
+      }
+    }
+    
+    if (!rawData) {
+      const fullUrl = typeof window !== "undefined" ? window.location.href : "N/A";
+      const searchStr = searchParams.toString();
+      const debugMsg = `URL: ${fullUrl.substring(0, 200)}...\nSearch: ${searchStr}\nNo data or id parameter found.`;
+      console.error("No data parameter found in URL");
+      console.error("Full URL:", fullUrl);
+      console.error("Search params:", searchStr);
+      setDebugInfo(debugMsg);
+      setError("invalid share link - no data parameter found");
       return;
     }
 
-    console.log("Loading shared group, encoded data length:", encodedData.length);
-    console.log("First 100 chars:", encodedData.substring(0, 100));
+    console.log("Loading shared group from URL, encoded data length:", rawData.length);
+    console.log("First 100 chars:", rawData.substring(0, 100));
+    console.log("Last 50 chars:", rawData.substring(Math.max(0, rawData.length - 50)));
 
     try {
-      const decodedGroup = decodeGroupFromShare(encodedData);
+      const decodedGroup = decodeGroupFromShare(rawData);
       if (!decodedGroup) {
         console.error("Failed to decode group - decodeGroupFromShare returned null");
+        const debugMsg = `Data length: ${rawData.length}\nFirst 50 chars: ${rawData.substring(0, 50)}\nLast 50 chars: ${rawData.substring(Math.max(0, rawData.length - 50))}\nFailed to decompress/parse data.`;
+        setDebugInfo(debugMsg);
         setError("invalid or corrupted share link");
         return;
       }
@@ -65,6 +139,9 @@ function GroupViewContent() {
       }
     } catch (err) {
       console.error("Error loading shared group:", err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      const debugMsg = `Error: ${errorMsg}\nURL: ${typeof window !== "undefined" ? window.location.href.substring(0, 200) : "N/A"}...`;
+      setDebugInfo(debugMsg);
       if (err instanceof Error) {
         console.error("Error message:", err.message);
         console.error("Error stack:", err.stack);
@@ -162,9 +239,30 @@ function GroupViewContent() {
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
-            <div className="text-gray-400 text-center py-10">
-              <p className="text-lg mb-2">{error}</p>
-              <p className="text-sm">please request a new share link from the group owner.</p>
+            <div className="text-gray-400 py-10">
+              <div className="text-center mb-4">
+                <p className="text-lg mb-2">{error}</p>
+                <p className="text-sm">please request a new share link from the group owner.</p>
+              </div>
+              {debugInfo && (
+                <div className="mt-6 p-4 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl">
+                  <p className="text-xs font-semibold text-gray-300 mb-2">debug information:</p>
+                  <pre className="text-xs text-gray-400 whitespace-pre-wrap break-all font-mono">
+                    {debugInfo}
+                  </pre>
+                  <p className="text-xs text-gray-500 mt-3">
+                    please share this information with the group owner to help fix the issue.
+                  </p>
+                </div>
+              )}
+              {typeof window !== "undefined" && (
+                <div className="mt-4 p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-lg">
+                  <p className="text-xs text-gray-500 mb-2">url information:</p>
+                  <p className="text-xs text-gray-400 break-all mb-1">full url: {window.location.href}</p>
+                  <p className="text-xs text-gray-400">has data param: {searchParams.has("data") ? "Yes" : "No"}</p>
+                  <p className="text-xs text-gray-400">url length: {window.location.href.length} characters</p>
+                </div>
+              )}
             </div>
           </Card>
         </main>
