@@ -31,6 +31,12 @@ export default function TransactionForm({
   const [date, setDate] = useState(
     initialData?.date ? formatDateInput(initialData.date) : formatDateInput(new Date().toISOString())
   );
+  const [expectedDate, setExpectedDate] = useState(
+    initialData?.expectedDate ? formatDateInput(initialData.expectedDate) : ""
+  );
+  const [dueDate, setDueDate] = useState(
+    initialData?.dueDate ? formatDateInput(initialData.dueDate) : ""
+  );
   const [notes, setNotes] = useState(initialData?.notes || "");
 
   const handleSubmit = (e: FormEvent) => {
@@ -43,6 +49,8 @@ export default function TransactionForm({
       amount: parseFloat(amount),
       category: category.trim() || undefined,
       date: initialData?.date || new Date().toISOString(),
+      expectedDate: expectedDate ? new Date(expectedDate).toISOString() : undefined,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
       notes: notes.trim() || undefined,
     });
   };
@@ -129,6 +137,34 @@ export default function TransactionForm({
             </select>
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
           </div>
+        </div>
+      )}
+
+      {!isWallet && type === "receive" && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+            when
+          </label>
+          <input
+            type="date"
+            value={expectedDate}
+            onChange={(e) => setExpectedDate(e.target.value)}
+            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+          />
+        </div>
+      )}
+
+      {!isWallet && type === "pay" && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-300 mb-2.5">
+            due date
+          </label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+          />
         </div>
       )}
 

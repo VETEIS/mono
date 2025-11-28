@@ -25,6 +25,23 @@ export default function NewExpensePage() {
 
   const currentUserId = group?.members[0]?.id || ""; // Default to first member for now
 
+  // Helper function to distribute amount equally with proper rounding
+  const distributeEqually = (total: number, memberIds: string[]): Record<string, number> => {
+    if (memberIds.length === 0) return {};
+    
+    const perPerson = total / memberIds.length;
+    const roundedPerPerson = Math.floor(perPerson * 100) / 100; // Round down to 2 decimals
+    const remainder = Math.round((total - roundedPerPerson * memberIds.length) * 100) / 100;
+    
+    const result: Record<string, number> = {};
+    memberIds.forEach((id, index) => {
+      // Add remainder to the first member to ensure total is exact
+      result[id] = roundedPerPerson + (index === 0 ? remainder : 0);
+    });
+    
+    return result;
+  };
+
   const handlePaidByChange = (memberId: string, value: string) => {
     const numValue = parseFloat(value) || 0;
     setPaidBy((prev) => {
@@ -54,22 +71,11 @@ export default function NewExpensePage() {
     const selectedMembers = Object.keys(splitBetween).filter(
       (id) => splitBetween[id] > 0
     );
-    const membersToSplit = selectedMembers.length || group.members.length;
-    const perPerson = totalAmount / membersToSplit;
+    const memberIds = selectedMembers.length > 0 
+      ? selectedMembers 
+      : group.members.map((m) => m.id);
 
-    if (selectedMembers.length > 0) {
-      const newSplit: Record<string, number> = {};
-      selectedMembers.forEach((id) => {
-        newSplit[id] = perPerson;
-      });
-      setSplitBetween(newSplit);
-    } else {
-      const newSplit: Record<string, number> = {};
-      group.members.forEach((member) => {
-        newSplit[member.id] = perPerson;
-      });
-      setSplitBetween(newSplit);
-    }
+    setSplitBetween(distributeEqually(totalAmount, memberIds));
   };
 
   // Update split equally when amount or splitEqually changes
@@ -80,22 +86,14 @@ export default function NewExpensePage() {
         const selectedMembers = Object.keys(splitBetween).filter(
           (id) => splitBetween[id] > 0
         );
-        const membersToSplit = selectedMembers.length || group.members.length;
-        const perPerson = totalAmount / membersToSplit;
+        const memberIds = selectedMembers.length > 0 
+          ? selectedMembers 
+          : group.members.map((m) => m.id);
 
-        const newSplit: Record<string, number> = {};
-        if (selectedMembers.length > 0) {
-          selectedMembers.forEach((id) => {
-            newSplit[id] = perPerson;
-          });
-        } else {
-          group.members.forEach((member) => {
-            newSplit[member.id] = perPerson;
-          });
-        }
-        setSplitBetween(newSplit);
+        setSplitBetween(distributeEqually(totalAmount, memberIds));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amount, splitEqually, group]);
 
   const paidByTotal = Object.values(paidBy).reduce((sum, val) => sum + val, 0);
@@ -192,19 +190,10 @@ export default function NewExpensePage() {
                       const selectedMembers = Object.keys(splitBetween).filter(
                         (id) => splitBetween[id] > 0
                       );
-                      const membersToSplit = selectedMembers.length || group.members.length;
-                      const perPerson = newAmount / membersToSplit;
-                      const newSplit: Record<string, number> = {};
-                      if (selectedMembers.length > 0) {
-                        selectedMembers.forEach((id) => {
-                          newSplit[id] = perPerson;
-                        });
-                      } else {
-                        group.members.forEach((member) => {
-                          newSplit[member.id] = perPerson;
-                        });
-                      }
-                      setSplitBetween(newSplit);
+                      const memberIds = selectedMembers.length > 0 
+                        ? selectedMembers 
+                        : group.members.map((m) => m.id);
+                      setSplitBetween(distributeEqually(newAmount, memberIds));
                     }
                   }
                 }}
@@ -276,18 +265,11 @@ export default function NewExpensePage() {
                       onChange={(e) => {
                         if (e.target.checked) {
                           if (splitEqually && amountNum > 0) {
-                            const selectedCount = Object.keys(splitBetween).filter(
+                            const currentSelected = Object.keys(splitBetween).filter(
                               (id) => splitBetween[id] > 0
-                            ).length + 1;
-                            const perPerson = amountNum / selectedCount;
-                            setSplitBetween((prev) => {
-                              const updated = { ...prev };
-                              Object.keys(updated).forEach((id) => {
-                                updated[id] = perPerson;
-                              });
-                              updated[member.id] = perPerson;
-                              return updated;
-                            });
+                            );
+                            const memberIds = [...currentSelected, member.id];
+                            setSplitBetween(distributeEqually(amountNum, memberIds));
                           } else {
                             setSplitBetween((prev) => ({
                               ...prev,
@@ -299,14 +281,11 @@ export default function NewExpensePage() {
                             const updated = { ...prev };
                             delete updated[member.id];
                             if (splitEqually && amountNum > 0) {
-                              const remainingCount = Object.keys(updated).filter(
+                              const remainingIds = Object.keys(updated).filter(
                                 (id) => updated[id] > 0
-                              ).length;
-                              if (remainingCount > 0) {
-                                const perPerson = amountNum / remainingCount;
-                                Object.keys(updated).forEach((id) => {
-                                  updated[id] = perPerson;
-                                });
+                              );
+                              if (remainingIds.length > 0) {
+                                return distributeEqually(amountNum, remainingIds);
                               }
                             }
                             return updated;

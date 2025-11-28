@@ -73,17 +73,24 @@ export default function GroupPage() {
   }, [group, selectedMemberId]);
 
   const memberBreakdown = useMemo(() => {
-    if (!group || !selectedMemberId || !pairwiseDebts[selectedMemberId]) return [];
+    if (!group || !selectedMemberId) return [];
     
     const breakdown: Array<{ memberId: string; amount: number; type: "owes" | "owed" }> = [];
     
-    Object.entries(pairwiseDebts[selectedMemberId]).forEach(([otherMemberId, amount]) => {
-      if (Math.abs(amount) > 0.01) {
-        if (amount > 0) {
-          breakdown.push({ memberId: otherMemberId, amount, type: "owes" });
-        } else {
-          breakdown.push({ memberId: otherMemberId, amount: -amount, type: "owed" });
-        }
+    // Check debts from other members' perspective - who owes the selected member
+    group.members.forEach((otherMember) => {
+      if (otherMember.id === selectedMemberId) return;
+      
+      // Check if otherMember owes selectedMember
+      const debt = pairwiseDebts[otherMember.id]?.[selectedMemberId];
+      if (debt && debt > 0.01) {
+        breakdown.push({ memberId: otherMember.id, amount: debt, type: "owes" });
+      }
+      
+      // Check if selectedMember owes otherMember (shown as "owed by")
+      const credit = pairwiseDebts[selectedMemberId]?.[otherMember.id];
+      if (credit && credit > 0.01) {
+        breakdown.push({ memberId: otherMember.id, amount: credit, type: "owed" });
       }
     });
     
@@ -485,38 +492,33 @@ export default function GroupPage() {
           ) : (
             <>
               <div className="space-y-2">
-                {memberBreakdown.map((item) => {
-                  const otherMember = group?.members.find((m) => m.id === item.memberId);
-                  if (!otherMember) return null;
-                  
-                  return (
-                    <div
-                      key={item.memberId}
-                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
-                          style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
-                        >
-                          {otherMember.name.charAt(0).toUpperCase()}
+                {memberBreakdown
+                  .filter((item) => item.type === "owes")
+                  .map((item) => {
+                    const otherMember = group?.members.find((m) => m.id === item.memberId);
+                    if (!otherMember) return null;
+                    
+                    return (
+                      <div
+                        key={item.memberId}
+                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
+                            style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
+                          >
+                            {otherMember.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                            <p className="text-xs text-gray-500">owes you</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {item.type === "owes" ? "owes" : "owed by"}
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-red-400">
+                            {formatCurrency(item.amount)}
                           </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <p
-                          className={`font-bold ${
-                            item.type === "owes" ? "text-red-400" : "text-green-400"
-                          }`}
-                        >
-                          {formatCurrency(item.amount)}
-                        </p>
-                        {item.type === "owes" && (
                           <button
                             onClick={() => {
                               setSettleTo(item.memberId);
@@ -526,11 +528,61 @@ export default function GroupPage() {
                           >
                             settle
                           </button>
-                        )}
+                        </div>
                       </div>
+                    );
+                  })}
+                
+                {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                  <>
+                    <div className="border-t border-[#3A3A3C] pt-2 mt-2">
+                      {memberBreakdown
+                        .filter((item) => item.type === "owed")
+                        .map((item) => {
+                          const otherMember = group?.members.find((m) => m.id === item.memberId);
+                          if (!otherMember) return null;
+                          
+                          return (
+                            <div
+                              key={item.memberId}
+                              className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
+                                  style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
+                                >
+                                  {otherMember.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                  <p className="text-xs text-gray-500">owed by you</p>
+                                </div>
+                              </div>
+                              <p className="font-bold text-green-400">
+                                {formatCurrency(item.amount)}
+                              </p>
+                            </div>
+                          );
+                        })}
                     </div>
-                  );
-                })}
+                  </>
+                )}
+                
+                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                  <div className="pt-3 border-t border-[#3A3A3C]">
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-300 font-semibold">total to receive:</p>
+                      <p className="text-green-400 font-bold text-lg">
+                        {formatCurrency(
+                          memberBreakdown
+                            .filter((item) => item.type === "owes")
+                            .reduce((sum, item) => sum + item.amount, 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {settleTo && (

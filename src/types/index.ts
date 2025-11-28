@@ -6,7 +6,9 @@ export interface Transaction {
   label: string;
   amount: number;
   category?: string;
-  date: string; // ISO string
+  date: string; // ISO string - transaction date (when it was recorded)
+  expectedDate?: string; // ISO string - when they expect to receive money (for receive type)
+  dueDate?: string; // ISO string - when they should pay the debt (for pay type)
   notes?: string;
   wallet?: boolean; // true if this is a wallet transaction
 }
