@@ -561,53 +561,71 @@ export default function GroupPage() {
                     <button
                       onClick={async (e) => {
                         e.preventDefault();
-                        const shareUrl = generateShareUrl(group);
+                        if (!group) return;
                         
-                        // Check if Web Share API is supported (mobile devices)
-                        if (navigator.share) {
-                          try {
-                            await navigator.share({
-                              title: `${group.name} - Group Share`,
-                              text: `Check out this group: ${group.name}`,
-                              url: shareUrl,
-                            });
-                          } catch (err) {
-                            // User cancelled or error occurred
-                            if ((err as Error).name !== "AbortError") {
-                              console.error("Error sharing:", err);
-                              // Fallback to copy if share fails
-                              if (shareUrlRef.current) {
-                                shareUrlRef.current.select();
-                                shareUrlRef.current.setSelectionRange(0, 99999);
-                                navigator.clipboard.writeText(shareUrl).catch(() => {
-                                  document.execCommand("copy");
-                                });
+                        try {
+                          const shareUrl = generateShareUrl(group);
+                          
+                          // Check if Web Share API is supported (mobile devices)
+                          if (typeof navigator !== "undefined" && navigator.share) {
+                            try {
+                              await navigator.share({
+                                title: `${group.name} - Group Share`,
+                                text: `Check out this group: ${group.name}`,
+                                url: shareUrl,
+                              });
+                            } catch (err) {
+                              // User cancelled or error occurred
+                              if ((err as Error).name !== "AbortError") {
+                                console.error("Error sharing:", err);
+                                // Fallback to copy if share fails
+                                if (shareUrlRef.current) {
+                                  shareUrlRef.current.select();
+                                  shareUrlRef.current.setSelectionRange(0, 99999);
+                                  try {
+                                    await navigator.clipboard.writeText(shareUrl);
+                                  } catch {
+                                    document.execCommand("copy");
+                                  }
+                                }
+                              }
+                            }
+                          } else {
+                            // Fallback for browsers that don't support Web Share API (desktop)
+                            if (shareUrlRef.current) {
+                              shareUrlRef.current.select();
+                              shareUrlRef.current.setSelectionRange(0, 99999);
+                              try {
+                                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                  await navigator.clipboard.writeText(shareUrl);
+                                  const button = e.currentTarget;
+                                  const originalText = button.textContent;
+                                  if (button.textContent) {
+                                    button.textContent = "copied!";
+                                    setTimeout(() => {
+                                      button.textContent = originalText;
+                                    }, 2000);
+                                  }
+                                } else {
+                                  throw new Error("Clipboard not available");
+                                }
+                              } catch {
+                                // Fallback for older browsers
+                                document.execCommand("copy");
+                                const button = e.currentTarget;
+                                const originalText = button.textContent;
+                                if (button.textContent) {
+                                  button.textContent = "copied!";
+                                  setTimeout(() => {
+                                    button.textContent = originalText;
+                                  }, 2000);
+                                }
                               }
                             }
                           }
-                        } else {
-                          // Fallback for browsers that don't support Web Share API (desktop)
-                          if (shareUrlRef.current) {
-                            shareUrlRef.current.select();
-                            shareUrlRef.current.setSelectionRange(0, 99999);
-                            navigator.clipboard.writeText(shareUrl).then(() => {
-                              const button = e.currentTarget;
-                              const originalText = button.textContent;
-                              button.textContent = "copied!";
-                              setTimeout(() => {
-                                button.textContent = originalText;
-                              }, 2000);
-                            }).catch(() => {
-                              // Fallback for older browsers
-                              document.execCommand("copy");
-                              const button = e.currentTarget;
-                              const originalText = button.textContent;
-                              button.textContent = "copied!";
-                              setTimeout(() => {
-                                button.textContent = originalText;
-                              }, 2000);
-                            });
-                          }
+                        } catch (error) {
+                          console.error("Error generating share URL:", error);
+                          alert("Failed to generate share link. Please try again.");
                         }
                       }}
                       className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
