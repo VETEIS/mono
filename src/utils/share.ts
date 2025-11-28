@@ -43,17 +43,41 @@ export async function createGroupGist(group: Group): Promise<string | null> {
 export async function fetchGroupFromGist(pasteId: string): Promise<Group | null> {
   try {
     // Fetch the paste from dpaste.com using the paste ID
-    // The paste ID is the last part of the URL (e.g., abc123 from https://dpaste.com/abc123)
-    const pasteUrl = `https://dpaste.com/${pasteId}.txt`;
-    
-    const response = await fetch(pasteUrl, {
+    // Try different URL formats
+    let pasteUrl = `https://dpaste.com/${pasteId}.txt`;
+    let response = await fetch(pasteUrl, {
       headers: {
         "Accept": "text/plain",
       },
     });
 
+    // If .txt doesn't work, try without extension
     if (!response.ok) {
-      console.error("Failed to fetch paste:", response.status);
+      pasteUrl = `https://dpaste.com/${pasteId}`;
+      response = await fetch(pasteUrl, {
+        headers: {
+          "Accept": "text/plain",
+        },
+      });
+    }
+
+    // If still not working, try raw format
+    if (!response.ok) {
+      pasteUrl = `https://dpaste.com/${pasteId}/raw`;
+      response = await fetch(pasteUrl, {
+        headers: {
+          "Accept": "text/plain",
+        },
+      });
+    }
+
+    if (!response.ok) {
+      console.error("Failed to fetch paste:", {
+        status: response.status,
+        statusText: response.statusText,
+        pasteId,
+        triedUrls: [`https://dpaste.com/${pasteId}.txt`, `https://dpaste.com/${pasteId}`, `https://dpaste.com/${pasteId}/raw`],
+      });
       return null;
     }
 
@@ -67,7 +91,7 @@ export async function fetchGroupFromGist(pasteId: string): Promise<Group | null>
     // Decompress and parse the group data
     const decompressed = LZString.decompressFromBase64(compressed.trim());
     if (!decompressed) {
-      console.error("Failed to decompress group data");
+      console.error("Failed to decompress group data. Compressed length:", compressed.length);
       return null;
     }
 

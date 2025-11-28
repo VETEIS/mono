@@ -17,16 +17,20 @@ export async function POST(request: NextRequest) {
     const compressed = LZString.compressToBase64(jsonString);
 
     // Use dpaste.com API - free anonymous paste service
+    // API endpoint: https://dpaste.com/api/v2/
+    // Parameters: content (required), syntax (optional), expiry_days (optional, max 365)
+    const formData = new URLSearchParams({
+      content: compressed,
+      syntax: "text",
+      expiry_days: "365", // Keep for 1 year
+    });
+
     const response = await fetch("https://dpaste.com/api/v2/", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams({
-        content: compressed,
-        syntax: "text",
-        expiry_days: "365", // Keep for 1 year
-      }),
+      body: formData.toString(),
     });
 
     if (!response.ok) {
@@ -48,16 +52,25 @@ export async function POST(request: NextRequest) {
     // dpaste.com returns the URL directly as plain text
     const pasteUrl = (await response.text()).trim();
     
+    console.log("dpaste.com response:", pasteUrl);
+    
     if (!pasteUrl || !pasteUrl.startsWith("http")) {
+      console.error("Invalid paste URL response:", pasteUrl);
       throw new Error("Invalid response from paste service");
     }
 
-    // Extract the paste ID from the URL (e.g., https://dpaste.com/abc123 -> abc123)
-    const pasteId = pasteUrl.split("/").pop()?.split(".")[0] || "";
+    // Extract the paste ID from the URL
+    // dpaste.com URLs can be: https://dpaste.com/abc123 or https://dpaste.com/abc123.txt
+    let pasteId = pasteUrl.split("/").pop() || "";
+    // Remove .txt extension if present
+    pasteId = pasteId.replace(/\.txt$/, "");
     
     if (!pasteId) {
+      console.error("Could not extract paste ID from URL:", pasteUrl);
       throw new Error("Could not extract paste ID from URL");
     }
+    
+    console.log("Extracted paste ID:", pasteId);
     
     // Return our app URL with the paste ID
     const baseUrl = request.headers.get("origin") || request.nextUrl.origin;
