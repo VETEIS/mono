@@ -22,8 +22,17 @@ function GroupViewContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
+  
+  // Prevent hydration mismatch by only processing after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    // Only process after component is mounted to avoid hydration issues
+    if (!mounted) return;
+    
     // Check for chunked data first (for very long groups)
     const chunksParam = searchParams.get("chunks");
     if (chunksParam) {
@@ -148,7 +157,7 @@ function GroupViewContent() {
       }
       setError("failed to load group data");
     }
-  }, [searchParams, groups, addGroup, updateGroup]);
+  }, [mounted, searchParams, groups, addGroup, updateGroup]);
 
   // Sync with store updates (live updates)
   useEffect(() => {
@@ -232,6 +241,22 @@ function GroupViewContent() {
     
     return breakdown.sort((a, b) => b.amount - a.amount);
   }, [group, selectedMemberId, pairwiseDebts]);
+
+  // Show loading state until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen pb-20">
+        <Header title="group view" backHref="/groups" />
+        <main className="p-5">
+          <Card>
+            <div className="text-gray-400 text-center py-10">
+              <p className="text-sm">loading...</p>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   if (error) {
     return (

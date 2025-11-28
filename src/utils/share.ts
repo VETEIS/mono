@@ -123,10 +123,7 @@ export function decodeGroupFromShare(encoded: string): Group | null {
     let decoded = encoded;
     let attempts = [];
     
-    // Strategy 1: Use as-is (Next.js might have already decoded it)
-    attempts.push({ name: "as-is", value: encoded });
-    
-    // Strategy 2: Try decoding if it contains % (URL encoded)
+    // Strategy 1: Try decoding if it contains % (URL encoded) - Next.js might not have decoded it
     if (encoded.includes("%")) {
       try {
         const decoded1 = decodeURIComponent(encoded);
@@ -135,6 +132,9 @@ export function decodeGroupFromShare(encoded: string): Group | null {
         console.warn("decodeURIComponent failed:", e);
       }
     }
+    
+    // Strategy 2: Use as-is (Next.js might have already decoded it)
+    attempts.push({ name: "as-is", value: encoded });
     
     // Strategy 3: Try double decoding (in case it was double-encoded)
     if (encoded.includes("%")) {
