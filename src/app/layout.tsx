@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "MONO",
-  description: "Never lose track again.",
+  description: "never lose track of your money again",
 };
 
 export default function RootLayout({

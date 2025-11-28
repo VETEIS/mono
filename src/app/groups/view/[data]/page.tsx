@@ -362,6 +362,9 @@ export default function GroupViewPage() {
           ) : (
             <>
               <div className="space-y-2">
+                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                  <h3 className="text-sm font-semibold text-gray-400 mb-2">receive from</h3>
+                )}
                 {memberBreakdown
                   .filter((item) => item.type === "owes")
                   .map((item) => {
@@ -374,9 +377,12 @@ export default function GroupViewPage() {
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <p className="text-gray-50 font-medium text-sm flex items-center gap-1">
-                            {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
-                          </p>
+                          <div>
+                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
+                            </p>
+                          </div>
                         </div>
                         <p className="font-bold text-green-400">
                           {formatCurrency(item.amount)}
@@ -387,6 +393,7 @@ export default function GroupViewPage() {
                 
                 {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
                   <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
+                    <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
                     {memberBreakdown
                       .filter((item) => item.type === "owed")
                       .map((item) => {
@@ -398,11 +405,14 @@ export default function GroupViewPage() {
                             key={item.memberId}
                             className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
                           >
-                              <div className="flex items-center gap-3">
-                                <p className="text-gray-50 font-medium text-sm flex items-center gap-1">
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1">
                                   {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
                                 </p>
                               </div>
+                            </div>
                             <p className="font-bold text-red-400">
                               {formatCurrency(item.amount)}
                             </p>
