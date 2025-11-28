@@ -19,24 +19,11 @@ export default function NewExpensePage() {
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [paidBy, setPaidBy] = useState<Record<string, number>>({});
   const [splitBetween, setSplitBetween] = useState<Record<string, number>>({});
   const [splitEqually, setSplitEqually] = useState(true);
-  const [notes, setNotes] = useState("");
 
   const currentUserId = group?.members[0]?.id || ""; // Default to first member for now
-
-  // Initialize paidBy with current user when amount changes
-  useMemo(() => {
-    if (group && group.members.length > 0 && currentUserId && amount) {
-      const amountNum = parseFloat(amount);
-      if (amountNum > 0 && Object.keys(paidBy).length === 0) {
-        setPaidBy({ [currentUserId]: amountNum });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amount, group, currentUserId]);
 
   const handlePaidByChange = (memberId: string, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -124,7 +111,7 @@ export default function NewExpensePage() {
       amount: amountNum,
       paidBy,
       splitBetween,
-      date: new Date(date).toISOString(),
+      date: new Date().toISOString(),
       createdBy: currentUserId,
     };
     const tempGroup = {
@@ -132,7 +119,7 @@ export default function NewExpensePage() {
       expenses: [...group.expenses, tempExpense],
     };
     return computeNets(tempGroup);
-  }, [group, amountNum, paidBy, splitBetween, description, date, currentUserId]);
+  }, [group, amountNum, paidBy, splitBetween, description, currentUserId]);
 
   if (!group) {
     return (
@@ -160,8 +147,7 @@ export default function NewExpensePage() {
       amount: amountNum,
       paidBy,
       splitBetween,
-      date: new Date(date).toISOString(),
-      notes: notes.trim() || undefined,
+      date: new Date().toISOString(),
       createdBy: currentUserId,
     });
 
@@ -221,27 +207,10 @@ export default function NewExpensePage() {
                       setSplitBetween(newSplit);
                     }
                   }
-                  // Update paid by if only one payer
-                  if (Object.keys(paidBy).length === 1) {
-                    const payerId = Object.keys(paidBy)[0];
-                    setPaidBy({ [payerId]: parseFloat(e.target.value) || 0 });
-                  }
                 }}
                 required
                 className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
                 placeholder="0.00"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2.5">
-                date
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
               />
             </div>
 
@@ -366,19 +335,6 @@ export default function NewExpensePage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2.5">
-                notes
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all resize-none"
-                placeholder="optional notes"
-              />
             </div>
 
             {/* Preview */}

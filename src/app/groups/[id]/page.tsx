@@ -8,7 +8,7 @@ import Modal from "@/components/Modal";
 import Link from "next/link";
 import { Plus, Download, Upload, Sparkles, MoreVertical } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
-import { computeNets, suggestSettlements } from "@/utils/groups";
+import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { useMemo, useState, useRef } from "react";
 
 export default function GroupPage() {
@@ -23,6 +23,9 @@ export default function GroupPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [settleAmount, setSettleAmount] = useState("");
+  const [settleTo, setSettleTo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const nets = useMemo(() => {
@@ -59,6 +62,34 @@ export default function GroupPage() {
     return suggestSettlements(group);
   }, [group]);
 
+  const pairwiseDebts = useMemo(() => {
+    if (!group) return {};
+    return computePairwiseDebts(group);
+  }, [group]);
+
+  const selectedMember = useMemo(() => {
+    if (!group || !selectedMemberId) return null;
+    return group.members.find((m) => m.id === selectedMemberId);
+  }, [group, selectedMemberId]);
+
+  const memberBreakdown = useMemo(() => {
+    if (!group || !selectedMemberId || !pairwiseDebts[selectedMemberId]) return [];
+    
+    const breakdown: Array<{ memberId: string; amount: number; type: "owes" | "owed" }> = [];
+    
+    Object.entries(pairwiseDebts[selectedMemberId]).forEach(([otherMemberId, amount]) => {
+      if (Math.abs(amount) > 0.01) {
+        if (amount > 0) {
+          breakdown.push({ memberId: otherMemberId, amount, type: "owes" });
+        } else {
+          breakdown.push({ memberId: otherMemberId, amount: -amount, type: "owed" });
+        }
+      }
+    });
+    
+    return breakdown.sort((a, b) => b.amount - a.amount);
+  }, [group, selectedMemberId, pairwiseDebts]);
+
   const handleApplySuggestions = () => {
     if (!group) return;
     const currentUserId = group.members[0]?.id || "";
@@ -75,6 +106,30 @@ export default function GroupPage() {
     });
     
     setShowSuggestions(false);
+  };
+
+  const handleSettleDebt = () => {
+    if (!group || !selectedMemberId || !settleTo || !settleAmount) return;
+    const amountNum = parseFloat(settleAmount);
+    if (amountNum <= 0) return;
+    
+    const currentUserId = group.members[0]?.id || "";
+    const debt = pairwiseDebts[selectedMemberId]?.[settleTo];
+    if (!debt || debt <= 0) return;
+    
+    const settleAmountNum = Math.min(amountNum, debt);
+    
+    addSettlement(group.id, {
+      from: selectedMemberId,
+      to: settleTo,
+      amount: settleAmountNum,
+      date: new Date().toISOString(),
+      createdBy: currentUserId,
+      notes: `settled debt to ${group.members.find((m) => m.id === settleTo)?.name || "member"}`,
+    });
+    
+    setSettleAmount("");
+    setSettleTo(null);
   };
 
   const handleExport = () => {
@@ -169,6 +224,32 @@ export default function GroupPage() {
                   const member = group.members.find((m) => m.id === net.memberId);
                   if (!member) return null;
 
+                  // Find who owes this member (if net > 0) or who this member owes (if net < 0)
+                  let labelText = "settled";
+                  if (net.net > 0.01) {
+                    // This member is owed - find members with negative nets
+                    const debtors = sortedNets
+                      .filter((n) => n.net < -0.01 && n.memberId !== net.memberId)
+                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
+                      .filter(Boolean) as string[];
+                    if (debtors.length > 0) {
+                      labelText = `owed by ${debtors.join(", ")}`;
+                    } else {
+                      labelText = "owed";
+                    }
+                  } else if (net.net < -0.01) {
+                    // This member owes - find members with positive nets
+                    const creditors = sortedNets
+                      .filter((n) => n.net > 0.01 && n.memberId !== net.memberId)
+                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
+                      .filter(Boolean) as string[];
+                    if (creditors.length > 0) {
+                      labelText = `owes ${creditors.join(", ")}`;
+                    } else {
+                      labelText = "owes";
+                    }
+                  }
+
                   return (
                     <div
                       key={member.id}
@@ -181,7 +262,12 @@ export default function GroupPage() {
                         >
                           {member.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-gray-50 font-medium">{member.name}</span>
+                        <button
+                          onClick={() => setSelectedMemberId(member.id)}
+                          className="text-gray-50 font-medium hover:text-[#FCD34D] transition-colors text-left"
+                        >
+                          {member.name}
+                        </button>
                       </div>
                       <div className="text-right">
                         <p
@@ -197,7 +283,7 @@ export default function GroupPage() {
                           {formatCurrency(net.net)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {net.net > 0 ? "owed" : net.net < 0 ? "owes" : "settled"}
+                          {labelText}
                         </p>
                       </div>
                     </div>
@@ -380,6 +466,115 @@ export default function GroupPage() {
               choose file
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Member Breakdown Modal */}
+      <Modal
+        isOpen={selectedMemberId !== null}
+        onClose={() => {
+          setSelectedMemberId(null);
+          setSettleAmount("");
+          setSettleTo(null);
+        }}
+        title={selectedMember ? `${selectedMember.name}'s breakdown` : "member breakdown"}
+      >
+        <div className="space-y-4">
+          {memberBreakdown.length === 0 ? (
+            <p className="text-gray-400 text-center py-4">no debts or credits</p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {memberBreakdown.map((item) => {
+                  const otherMember = group?.members.find((m) => m.id === item.memberId);
+                  if (!otherMember) return null;
+                  
+                  return (
+                    <div
+                      key={item.memberId}
+                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
+                          style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
+                        >
+                          {otherMember.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {item.type === "owes" ? "owes" : "owed by"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p
+                          className={`font-bold ${
+                            item.type === "owes" ? "text-red-400" : "text-green-400"
+                          }`}
+                        >
+                          {formatCurrency(item.amount)}
+                        </p>
+                        {item.type === "owes" && (
+                          <button
+                            onClick={() => {
+                              setSettleTo(item.memberId);
+                              setSettleAmount(item.amount.toFixed(2));
+                            }}
+                            className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
+                          >
+                            settle
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {settleTo && (
+                <div className="pt-4 border-t border-[#3A3A3C] space-y-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      settle amount
+                    </label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={settleAmount}
+                      onChange={(e) => setSettleAmount(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      settling to {group?.members.find((m) => m.id === settleTo)?.name || "member"}
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setSettleAmount("");
+                        setSettleTo(null);
+                      }}
+                      className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+                    >
+                      cancel
+                    </button>
+                    <button
+                      onClick={handleSettleDebt}
+                      disabled={!settleAmount || parseFloat(settleAmount) <= 0}
+                      className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
+                    >
+                      confirm settlement
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </Modal>
     </div>

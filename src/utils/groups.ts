@@ -43,12 +43,13 @@ export function computeNets(group: Group, precision = 2): Net[] {
   }
 
   // Process settlements (explicit payments)
+  // When 'from' pays 'to', 'from' debt is reduced (net increases) and 'to' credit is reduced (net decreases)
   for (const settlement of group.settlements) {
     if (netsMap[settlement.from] !== undefined) {
-      netsMap[settlement.from] -= settlement.amount;
+      netsMap[settlement.from] += settlement.amount; // Debt reduction (if negative, becomes less negative)
     }
     if (netsMap[settlement.to] !== undefined) {
-      netsMap[settlement.to] += settlement.amount;
+      netsMap[settlement.to] -= settlement.amount; // Credit reduction (if positive, becomes less positive)
     }
   }
 
@@ -100,6 +101,67 @@ export function suggestSettlements(
   }
 
   return suggestions;
+}
+
+/**
+ * Calculate pairwise debts between members
+ * Returns a map of memberId -> { memberId: amount } where amount is what the first member owes the second
+ * Positive amount means first member owes second member
+ * Negative amount means second member owes first member
+ */
+export function computePairwiseDebts(
+  group: Group,
+  precision = 2
+): Record<string, Record<string, number>> {
+  const debts: Record<string, Record<string, number>> = {};
+  const roundFactor = Math.pow(10, precision);
+
+  // Initialize all pairs to 0
+  group.members.forEach((member1) => {
+    debts[member1.id] = {};
+    group.members.forEach((member2) => {
+      if (member1.id !== member2.id) {
+        debts[member1.id][member2.id] = 0;
+      }
+    });
+  });
+
+  // Process expenses
+  for (const expense of group.expenses) {
+    const totalPaid = Object.values(expense.paidBy).reduce((sum, val) => sum + val, 0);
+    const totalSplit = Object.values(expense.splitBetween).reduce((sum, val) => sum + val, 0);
+    
+    if (totalSplit === 0 || totalPaid === 0) continue;
+
+    // For each person who split, they owe their share proportionally to the payers
+    Object.entries(expense.splitBetween).forEach(([splitterId, splitAmount]) => {
+      // Calculate what portion of the total paid amount this splitter is responsible for
+      const splitterShare = splitAmount;
+      
+      // Distribute this share proportionally among payers
+      Object.entries(expense.paidBy).forEach(([payerId, paidAmount]) => {
+        if (payerId !== splitterId && paidAmount > 0) {
+          // Calculate how much of the payer's contribution the splitter owes
+          const share = (splitterShare / totalSplit) * paidAmount;
+          const rounded = Math.round(share * roundFactor) / roundFactor;
+          if (debts[splitterId] && debts[splitterId][payerId] !== undefined) {
+            debts[splitterId][payerId] = Math.round((debts[splitterId][payerId] + rounded) * roundFactor) / roundFactor;
+          }
+        }
+      });
+    });
+  }
+
+  // Process settlements
+  for (const settlement of group.settlements) {
+    if (debts[settlement.from] && debts[settlement.from][settlement.to] !== undefined) {
+      const currentDebt = debts[settlement.from][settlement.to] || 0;
+      const newDebt = currentDebt - settlement.amount;
+      debts[settlement.from][settlement.to] = Math.round(newDebt * roundFactor) / roundFactor;
+    }
+  }
+
+  return debts;
 }
 
 /**
