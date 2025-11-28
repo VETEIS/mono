@@ -47,10 +47,9 @@ export default function GroupViewPage() {
       // Auto-add to user's groups if not already added (check by name to avoid duplicates)
       const existingGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
       if (!existingGroup) {
-        addGroup({
-          ...sharedGroup,
-          id: crypto.randomUUID(), // Generate new ID to avoid conflicts
-        });
+        // Remove id from sharedGroup since addGroup generates it internally
+        const { id, ...groupWithoutId } = sharedGroup;
+        addGroup(groupWithoutId);
       }
     } catch (err) {
       setError("failed to load group data");
