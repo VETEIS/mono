@@ -410,12 +410,9 @@ export default function GroupPage() {
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <div>
-                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
-                            </p>
-                          </div>
+                          <p className="text-gray-50 font-medium text-sm flex items-center gap-1">
+                            {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
+                          </p>
                         </div>
                         <p className="font-bold text-green-400">
                           {formatCurrency(item.amount)}
@@ -437,14 +434,11 @@ export default function GroupPage() {
                             key={item.memberId}
                             className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
                           >
-                            <div className="flex items-center gap-3">
-                              <div>
-                                <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                <p className="text-xs text-gray-500 flex items-center gap-1">
+                              <div className="flex items-center gap-3">
+                                <p className="text-gray-50 font-medium text-sm flex items-center gap-1">
                                   {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
                                 </p>
                               </div>
-                            </div>
                             <div className="flex items-center gap-3">
                               <p className="font-bold text-red-400">
                                 {formatCurrency(item.amount)}
