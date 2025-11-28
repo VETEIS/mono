@@ -62,13 +62,29 @@ export default function GroupViewPage() {
               };
               setGroup(sharedGroup);
               
-              const existingGroup = groups.find((g) => g.id === decodedGroup.id || (g.isShared && g.sharedFromGroupId === decodedGroup.id));
+              // Auto-add or update existing shared group
+              const existingGroup = groups.find((g) => 
+                (g.isShared && g.sharedFromGroupId === decodedGroup.id) || 
+                g.id === decodedGroup.id
+              );
+              
               if (!existingGroup) {
                 addGroup(sharedGroup);
               } else {
+                // Update existing shared group with latest data from new share link
                 updateGroup(existingGroup.id, {
-                  ...sharedGroup,
+                  ...decodedGroup,
                   id: existingGroup.id,
+                  isShared: true,
+                  sharedFromGroupId: decodedGroup.id,
+                  lastSyncedAt: new Date().toISOString(),
+                });
+                setGroup({
+                  ...decodedGroup,
+                  id: existingGroup.id,
+                  isShared: true,
+                  sharedFromGroupId: decodedGroup.id,
+                  lastSyncedAt: new Date().toISOString(),
                 });
               }
               return;
@@ -130,15 +146,32 @@ export default function GroupViewPage() {
       
       setGroup(sharedGroup);
       
-      // Auto-add to groups if not already exists
-      const existingGroup = groups.find((g) => g.id === decodedGroup.id || (g.isShared && g.sharedFromGroupId === decodedGroup.id));
+      // Auto-add to groups if not already exists, or update if it does
+      const existingGroup = groups.find((g) => 
+        (g.isShared && g.sharedFromGroupId === decodedGroup.id) || 
+        g.id === decodedGroup.id
+      );
+      
       if (!existingGroup) {
+        // New shared group - add it
         addGroup(sharedGroup);
       } else {
-        // Update existing shared group with latest data
+        // Existing shared group - update it with latest data from the new share link
+        // This ensures the shared group gets updated when source owner shares a new link
         updateGroup(existingGroup.id, {
-          ...sharedGroup,
-          id: existingGroup.id, // Keep the existing ID
+          ...decodedGroup, // Use fresh data from the URL
+          id: existingGroup.id, // Keep the existing ID in friend's device
+          isShared: true,
+          sharedFromGroupId: decodedGroup.id, // Keep reference to source
+          lastSyncedAt: new Date().toISOString(),
+        });
+        // Also update local state to reflect the update
+        setGroup({
+          ...decodedGroup,
+          id: existingGroup.id,
+          isShared: true,
+          sharedFromGroupId: decodedGroup.id,
+          lastSyncedAt: new Date().toISOString(),
         });
       }
     } catch (err) {
@@ -154,15 +187,25 @@ export default function GroupViewPage() {
     }
   }, [mounted, groups, addGroup, updateGroup]);
 
-  // Sync with store updates (live updates)
+  // Sync with store updates (when shared group is updated from a new share link)
   useEffect(() => {
-    if (!group) return;
+    if (!group || !mounted) return;
     
-    const existingGroup = groups.find((g) => g.id === group.id || (g.isShared && g.sharedFromGroupId === group.sharedFromGroupId));
-    if (existingGroup && existingGroup.lastSyncedAt !== group.lastSyncedAt) {
-      setGroup(existingGroup);
+    // Find the shared group in store (might have been updated)
+    const existingGroup = groups.find((g) => 
+      (g.isShared && g.sharedFromGroupId === group.sharedFromGroupId) || 
+      g.id === group.id
+    );
+    
+    // If the store version is newer (more recent lastSyncedAt), use it
+    if (existingGroup && existingGroup.lastSyncedAt && group.lastSyncedAt) {
+      const storeTime = new Date(existingGroup.lastSyncedAt).getTime();
+      const currentTime = new Date(group.lastSyncedAt).getTime();
+      if (storeTime > currentTime) {
+        setGroup(existingGroup);
+      }
     }
-  }, [groups, group]);
+  }, [groups, group, mounted]);
 
   const nets = useMemo(() => {
     if (!group) return [];
@@ -237,20 +280,9 @@ export default function GroupViewPage() {
     return breakdown.sort((a, b) => b.amount - a.amount);
   }, [group, selectedMemberId, pairwiseDebts]);
 
-  // Show loading state until mounted to prevent hydration mismatch
+  // Show nothing during SSR to prevent hydration mismatch
   if (!mounted) {
-    return (
-      <div className="min-h-screen pb-20">
-        <Header title="group view" backHref="/groups" />
-        <main className="p-5">
-          <Card>
-            <div className="text-gray-400 text-center py-10">
-              <p className="text-sm">loading...</p>
-            </div>
-          </Card>
-        </main>
-      </div>
-    );
+    return null;
   }
 
   if (error) {
