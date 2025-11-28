@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Sparkles, Share2, ArrowRight } from "lucide-react";
+import { Plus, Sparkles, Share2, ArrowRight, Send } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { generateShareUrl } from "@/utils/share";
@@ -548,33 +548,61 @@ export default function GroupPage() {
                       className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
                     />
                     <button
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.preventDefault();
-                        if (shareUrlRef.current) {
-                          shareUrlRef.current.select();
-                          shareUrlRef.current.setSelectionRange(0, 99999); // For mobile
-                          navigator.clipboard.writeText(shareUrlRef.current.value).then(() => {
-                            const button = e.currentTarget;
-                            const originalText = button.textContent;
-                            button.textContent = "copied!";
-                            setTimeout(() => {
-                              button.textContent = originalText;
-                            }, 2000);
-                          }).catch(() => {
-                            // Fallback for older browsers
-                            document.execCommand("copy");
-                            const button = e.currentTarget;
-                            const originalText = button.textContent;
-                            button.textContent = "copied!";
-                            setTimeout(() => {
-                              button.textContent = originalText;
-                            }, 2000);
-                          });
+                        const shareUrl = generateShareUrl(group);
+                        
+                        // Check if Web Share API is supported (mobile devices)
+                        if (navigator.share) {
+                          try {
+                            await navigator.share({
+                              title: `${group.name} - Group Share`,
+                              text: `Check out this group: ${group.name}`,
+                              url: shareUrl,
+                            });
+                          } catch (err) {
+                            // User cancelled or error occurred
+                            if ((err as Error).name !== "AbortError") {
+                              console.error("Error sharing:", err);
+                              // Fallback to copy if share fails
+                              if (shareUrlRef.current) {
+                                shareUrlRef.current.select();
+                                shareUrlRef.current.setSelectionRange(0, 99999);
+                                navigator.clipboard.writeText(shareUrl).catch(() => {
+                                  document.execCommand("copy");
+                                });
+                              }
+                            }
+                          }
+                        } else {
+                          // Fallback for browsers that don't support Web Share API (desktop)
+                          if (shareUrlRef.current) {
+                            shareUrlRef.current.select();
+                            shareUrlRef.current.setSelectionRange(0, 99999);
+                            navigator.clipboard.writeText(shareUrl).then(() => {
+                              const button = e.currentTarget;
+                              const originalText = button.textContent;
+                              button.textContent = "copied!";
+                              setTimeout(() => {
+                                button.textContent = originalText;
+                              }, 2000);
+                            }).catch(() => {
+                              // Fallback for older browsers
+                              document.execCommand("copy");
+                              const button = e.currentTarget;
+                              const originalText = button.textContent;
+                              button.textContent = "copied!";
+                              setTimeout(() => {
+                                button.textContent = originalText;
+                              }, 2000);
+                            });
+                          }
                         }
                       }}
-                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap"
+                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
                     >
-                      copy
+                      <Send className="w-4 h-4" />
+                      send
                     </button>
                   </div>
                 </div>
