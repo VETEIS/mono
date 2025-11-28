@@ -18,10 +18,10 @@ export default function NewGroupPage() {
   const [members, setMembers] = useState<Array<{ name: string; id: string }>>([]);
   
   // Check if group name already exists (real-time validation)
-  const nameExists = name.trim() && groups.some((g) => g.name.toLowerCase().trim() === name.toLowerCase().trim());
+  const nameExists = name.trim() ? groups.some((g) => g.name.toLowerCase().trim() === name.toLowerCase().trim()) : false;
   
   // Check if member name already exists in current members list (real-time validation)
-  const memberNameExists = memberName.trim() && members.some((m) => m.name.toLowerCase().trim() === memberName.toLowerCase().trim());
+  const memberNameExists = memberName.trim() ? members.some((m) => m.name.toLowerCase().trim() === memberName.toLowerCase().trim()) : false;
 
   const handleAddMember = () => {
     if (!memberName.trim()) return;
