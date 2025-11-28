@@ -135,14 +135,11 @@ export function computePairwiseDebts(
 
     // For each person who split, they owe their share proportionally to the payers
     Object.entries(expense.splitBetween).forEach(([splitterId, splitAmount]) => {
-      // Calculate what portion of the total paid amount this splitter is responsible for
-      const splitterShare = splitAmount;
-      
       // Distribute this share proportionally among payers
       Object.entries(expense.paidBy).forEach(([payerId, paidAmount]) => {
         if (payerId !== splitterId && paidAmount > 0) {
           // Calculate how much of the payer's contribution the splitter owes
-          const share = (splitterShare / totalSplit) * paidAmount;
+          const share = (splitAmount / totalSplit) * paidAmount;
           const rounded = Math.round(share * roundFactor) / roundFactor;
           if (debts[splitterId] && debts[splitterId][payerId] !== undefined) {
             debts[splitterId][payerId] = Math.round((debts[splitterId][payerId] + rounded) * roundFactor) / roundFactor;
@@ -153,12 +150,40 @@ export function computePairwiseDebts(
   }
 
   // Process settlements
+  // When 'from' pays 'to' an amount:
+  // - If 'from' owes 'to', reduce that debt
+  // - If 'to' owes 'from', increase that debt (because 'from' is paying 'to')
+  // - If 'from' doesn't owe 'to' and 'to' doesn't owe 'from', create a debt from 'to' to 'from'
   for (const settlement of group.settlements) {
+    const debtFromTo = debts[settlement.from]?.[settlement.to] || 0;
+    const debtToFrom = debts[settlement.to]?.[settlement.from] || 0;
+    
+    // Calculate net debt: positive means 'from' owes 'to', negative means 'to' owes 'from'
+    const netDebt = debtFromTo - debtToFrom;
+    const newNetDebt = netDebt - settlement.amount;
+    const rounded = Math.round(newNetDebt * roundFactor) / roundFactor;
+    
+    // Clear both directions first
     if (debts[settlement.from] && debts[settlement.from][settlement.to] !== undefined) {
-      const currentDebt = debts[settlement.from][settlement.to] || 0;
-      const newDebt = currentDebt - settlement.amount;
-      debts[settlement.from][settlement.to] = Math.round(newDebt * roundFactor) / roundFactor;
+      debts[settlement.from][settlement.to] = 0;
     }
+    if (debts[settlement.to] && debts[settlement.to][settlement.from] !== undefined) {
+      debts[settlement.to][settlement.from] = 0;
+    }
+    
+    // Set the new net debt in the appropriate direction
+    if (rounded > 0.01) {
+      // 'from' still owes 'to'
+      if (debts[settlement.from] && debts[settlement.from][settlement.to] !== undefined) {
+        debts[settlement.from][settlement.to] = rounded;
+      }
+    } else if (rounded < -0.01) {
+      // 'to' now owes 'from' (overpaid or reversed)
+      if (debts[settlement.to] && debts[settlement.to][settlement.from] !== undefined) {
+        debts[settlement.to][settlement.from] = Math.abs(rounded);
+      }
+    }
+    // If rounded is between -0.01 and 0.01, both debts are 0 (fully settled)
   }
 
   return debts;

@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Sparkles, Share2 } from "lucide-react";
+import { Plus, Sparkles, Share2, ArrowRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { generateShareUrl } from "@/utils/share";
@@ -76,20 +76,24 @@ export default function GroupPage() {
     
     const breakdown: Array<{ memberId: string; amount: number; type: "owes" | "owed" }> = [];
     
-    // Check debts from other members' perspective - who owes the selected member
+    // Calculate net pairwise debts (only show one direction per pair)
     group.members.forEach((otherMember) => {
       if (otherMember.id === selectedMemberId) return;
       
-      // Check if otherMember owes selectedMember
-      const debt = pairwiseDebts[otherMember.id]?.[selectedMemberId];
-      if (debt && debt > 0.01) {
-        breakdown.push({ memberId: otherMember.id, amount: debt, type: "owes" });
-      }
+      const debtFromOther = pairwiseDebts[otherMember.id]?.[selectedMemberId] || 0;
+      const debtToOther = pairwiseDebts[selectedMemberId]?.[otherMember.id] || 0;
       
-      // Check if selectedMember owes otherMember (shown as "owed by")
-      const credit = pairwiseDebts[selectedMemberId]?.[otherMember.id];
-      if (credit && credit > 0.01) {
-        breakdown.push({ memberId: otherMember.id, amount: credit, type: "owed" });
+      // Calculate net debt (positive means otherMember owes selectedMember, negative means selectedMember owes otherMember)
+      const netDebt = debtFromOther - debtToOther;
+      
+      if (Math.abs(netDebt) > 0.01) {
+        if (netDebt > 0) {
+          // Other member owes selected member
+          breakdown.push({ memberId: otherMember.id, amount: netDebt, type: "owes" });
+        } else {
+          // Selected member owes other member
+          breakdown.push({ memberId: otherMember.id, amount: Math.abs(netDebt), type: "owed" });
+        }
       }
     });
     
@@ -413,7 +417,9 @@ export default function GroupPage() {
                           </div>
                           <div>
                             <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                            <p className="text-xs text-gray-500">owes {selectedMember?.name}</p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
+                            </p>
                           </div>
                         </div>
                         <p className="font-bold text-green-400">
@@ -446,7 +452,9 @@ export default function GroupPage() {
                                 </div>
                                 <div>
                                   <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                  <p className="text-xs text-gray-500">{selectedMember?.name} owes {otherMember.name}</p>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                  </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
