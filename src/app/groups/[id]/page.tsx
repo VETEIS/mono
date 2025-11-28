@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Plus, Sparkles, Share2, ArrowRight, Send, Eye } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
-import { generateShareUrl } from "@/utils/share";
+import { createGroupGist } from "@/utils/share";
 import { useMemo, useState, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -23,6 +23,8 @@ export default function GroupPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
   const [settleAmount, setSettleAmount] = useState("");
   const [settleTo, setSettleTo] = useState<string | null>(null);
   const shareUrlRef = useRef<HTMLInputElement>(null);
@@ -555,7 +557,7 @@ export default function GroupPage() {
                       ref={shareUrlRef}
                       type="text"
                       readOnly
-                      value={generateShareUrl(group)}
+                      value={shareUrl || (isGeneratingShare ? "generating link..." : "click share button to generate link")}
                       className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
                     />
                     <button
@@ -563,8 +565,28 @@ export default function GroupPage() {
                         e.preventDefault();
                         if (!group) return;
                         
+                        setIsGeneratingShare(true);
                         try {
-                          const shareUrl = generateShareUrl(group);
+                          // Create gist and get shareable URL
+                          const gistUrl = await createGroupGist(group);
+                          
+                          if (!gistUrl) {
+                            alert("Failed to generate share link. Please try again.");
+                            setIsGeneratingShare(false);
+                            return;
+                          }
+                          
+                          // Extract gist ID from the gist URL and create our app URL
+                          let appShareUrl = gistUrl;
+                          const gistIdMatch = gistUrl.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/i) || 
+                                             gistUrl.match(/gist\.github\.com\/([a-f0-9]+)/i);
+                          if (gistIdMatch) {
+                            const gistId = gistIdMatch[1];
+                            const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+                            appShareUrl = `${baseUrl}/groups/view/${gistId}`;
+                          }
+                          
+                          setShareUrl(appShareUrl);
                           
                           // Check if Web Share API is supported (mobile devices)
                           if (typeof navigator !== "undefined" && navigator.share) {
@@ -572,7 +594,7 @@ export default function GroupPage() {
                               await navigator.share({
                                 title: `${group.name} - Group Share`,
                                 text: `Check out this group: ${group.name}`,
-                                url: shareUrl,
+                                url: appShareUrl,
                               });
                             } catch (err) {
                               // User cancelled or error occurred
@@ -583,7 +605,7 @@ export default function GroupPage() {
                                   shareUrlRef.current.select();
                                   shareUrlRef.current.setSelectionRange(0, 99999);
                                   try {
-                                    await navigator.clipboard.writeText(shareUrl);
+                                    await navigator.clipboard.writeText(appShareUrl);
                                   } catch {
                                     document.execCommand("copy");
                                   }
@@ -597,7 +619,7 @@ export default function GroupPage() {
                               shareUrlRef.current.setSelectionRange(0, 99999);
                               try {
                                 if (typeof navigator !== "undefined" && navigator.clipboard) {
-                                  await navigator.clipboard.writeText(shareUrl);
+                                  await navigator.clipboard.writeText(appShareUrl);
                                   const button = e.currentTarget;
                                   const originalText = button.textContent;
                                   if (button.textContent) {
@@ -611,7 +633,11 @@ export default function GroupPage() {
                                 }
                               } catch {
                                 // Fallback for older browsers
-                                document.execCommand("copy");
+                                if (shareUrlRef.current) {
+                                  shareUrlRef.current.select();
+                                  shareUrlRef.current.setSelectionRange(0, 99999);
+                                  document.execCommand("copy");
+                                }
                                 const button = e.currentTarget;
                                 const originalText = button.textContent;
                                 if (button.textContent) {
@@ -626,12 +652,15 @@ export default function GroupPage() {
                         } catch (error) {
                           console.error("Error generating share URL:", error);
                           alert("Failed to generate share link. Please try again.");
+                        } finally {
+                          setIsGeneratingShare(false);
                         }
                       }}
-                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
+                      disabled={isGeneratingShare}
+                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
                     >
                       <Send className="w-4 h-4" />
-                      share
+                      {isGeneratingShare ? "generating..." : "share"}
                     </button>
                   </div>
                 </div>
@@ -641,12 +670,18 @@ export default function GroupPage() {
                     scan qr code
                   </label>
                   <div className="flex justify-center p-4 bg-white rounded-xl">
-                    <QRCodeSVG
-                      value={generateShareUrl(group)}
-                      size={200}
-                      level="M"
-                      includeMargin={true}
-                    />
+                    {shareUrl ? (
+                      <QRCodeSVG
+                        value={shareUrl}
+                        size={200}
+                        level="M"
+                        includeMargin={true}
+                      />
+                    ) : (
+                      <div className="text-center p-8 text-gray-500">
+                        <p className="text-sm">generate link to see qr code</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

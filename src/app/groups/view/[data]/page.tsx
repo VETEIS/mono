@@ -7,7 +7,7 @@ import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
-import { decodeGroupFromShare } from "@/utils/share";
+import { fetchGroupFromGist } from "@/utils/share";
 import { useStore } from "@/store/useStore";
 import type { Group } from "@/types";
 import { Eye, ArrowRight } from "lucide-react";
@@ -23,43 +23,49 @@ export default function GroupViewPage() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   useEffect(() => {
-    const encodedData = params.data as string;
-    if (!encodedData) {
-      setError("invalid share link");
-      return;
-    }
-
-    try {
-      const decodedGroup = decodeGroupFromShare(encodedData);
-      if (!decodedGroup) {
-        setError("invalid or corrupted share link");
+    const loadGroup = async () => {
+      const encodedData = params.data as string;
+      if (!encodedData) {
+        setError("invalid share link");
         return;
       }
-      
-      // Mark as shared/read-only
-      const sharedGroup: Group = {
-        ...decodedGroup,
-        readOnly: true,
-        isShared: true,
-      };
-      
-      setGroup(sharedGroup);
-      
-      // Auto-add to user's groups or update if it's a shared group with the same name
-      const existingSharedGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
-      if (existingSharedGroup) {
-        // Overwrite the existing shared group with updated data
-        const { id, ...groupWithoutId } = sharedGroup;
-        updateGroup(existingSharedGroup.id, groupWithoutId);
-      } else {
-        // Add as new group if no shared group with same name exists
-        const { id, ...groupWithoutId } = sharedGroup;
-        addGroup(groupWithoutId);
+
+      try {
+        // Fetch group data from GitHub Gist
+        const decodedGroup = await fetchGroupFromGist(encodedData);
+        
+        if (!decodedGroup) {
+          setError("invalid or corrupted share link");
+          return;
+        }
+        
+        // Mark as shared/read-only
+        const sharedGroup: Group = {
+          ...decodedGroup,
+          readOnly: true,
+          isShared: true,
+        };
+        
+        setGroup(sharedGroup);
+        
+        // Auto-add to user's groups or update if it's a shared group with the same name
+        const existingSharedGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
+        if (existingSharedGroup) {
+          // Overwrite the existing shared group with updated data
+          const { id, ...groupWithoutId } = sharedGroup;
+          updateGroup(existingSharedGroup.id, groupWithoutId);
+        } else {
+          // Add as new group if no shared group with same name exists
+          const { id, ...groupWithoutId } = sharedGroup;
+          addGroup(groupWithoutId);
+        }
+      } catch (err) {
+        setError("failed to load group data");
+        console.error(err);
       }
-    } catch (err) {
-      setError("failed to load group data");
-      console.error(err);
-    }
+    };
+    
+    loadGroup();
   }, [params.data, addGroup, updateGroup, groups]);
 
   const nets = useMemo(() => {
