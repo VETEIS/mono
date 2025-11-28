@@ -185,17 +185,17 @@ export default function GroupPage() {
                 if (!group) return;
                 setIsGeneratingShare(true);
                 try {
-                  // Create gist and get shareable URL
-                  const gistUrl = await createGroupGist(group);
+                  // Create paste and get shareable URL
+                  const shareUrlResult = await createGroupGist(group);
                   
-                  if (!gistUrl) {
+                  if (!shareUrlResult) {
                     alert("Failed to generate share link. Please try again.");
                     setIsGeneratingShare(false);
                     return;
                   }
                   
                           // The API route already returns our app URL, so use it directly
-                          setShareUrl(gistUrl);
+                          setShareUrl(shareUrlResult);
                   setShowShare(true);
                 } catch (error) {
                   console.error("Error generating share URL:", error);

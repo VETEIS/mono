@@ -31,7 +31,7 @@ export default function GroupViewPage() {
       }
 
       try {
-        // Fetch group data from GitHub Gist
+        // Fetch group data from dpaste.com
         const decodedGroup = await fetchGroupFromGist(encodedData);
         
         if (!decodedGroup) {

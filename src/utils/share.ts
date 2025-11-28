@@ -6,7 +6,7 @@ import type { Group } from "@/types";
  */
 export async function createGroupGist(group: Group): Promise<string | null> {
   try {
-    // Call our Next.js API route which will upload the file
+    // Call our Next.js API route which will upload to dpaste.com
     const response = await fetch("/api/gists/create", {
       method: "POST",
       headers: {
@@ -38,29 +38,29 @@ export async function createGroupGist(group: Group): Promise<string | null> {
 }
 
 /**
- * Fetch and decode group data from shared file
+ * Fetch and decode group data from shared paste
  */
-export async function fetchGroupFromGist(fileId: string): Promise<Group | null> {
+export async function fetchGroupFromGist(pasteId: string): Promise<Group | null> {
   try {
-    // Fetch the file from 0x0.st using the file ID
-    // The file ID is the last part of the URL (e.g., abc123 from https://0x0.st/abc123.txt)
-    const fileUrl = `https://0x0.st/${fileId}`;
+    // Fetch the paste from dpaste.com using the paste ID
+    // The paste ID is the last part of the URL (e.g., abc123 from https://dpaste.com/abc123)
+    const pasteUrl = `https://dpaste.com/${pasteId}.txt`;
     
-    const response = await fetch(fileUrl, {
+    const response = await fetch(pasteUrl, {
       headers: {
         "Accept": "text/plain",
       },
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch file:", response.status);
+      console.error("Failed to fetch paste:", response.status);
       return null;
     }
 
     const compressed = await response.text();
     
     if (!compressed) {
-      console.error("File is empty");
+      console.error("Paste is empty");
       return null;
     }
 
@@ -74,9 +74,7 @@ export async function fetchGroupFromGist(fileId: string): Promise<Group | null> 
     const group: Group = JSON.parse(decompressed);
     return group;
   } catch (error) {
-    console.error("Error fetching group from file:", error);
+    console.error("Error fetching group from paste:", error);
     return null;
   }
 }
-
-
