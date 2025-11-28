@@ -218,9 +218,30 @@ export const useStore = create<StoreState>()(
       },
 
       updateGroup: (id, data) => {
-        set((state) => ({
-          groups: state.groups.map((g) => (g.id === id ? { ...g, ...data } : g)),
-        }));
+        set((state) => {
+          const updatedGroups = state.groups.map((g) => (g.id === id ? { ...g, ...data } : g));
+          
+          // If updating a source group (not shared), update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === id && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === id) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id, // Keep the shared group's ID
+                    isShared: true,
+                    sharedFromGroupId: id,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       deleteGroup: (id) => {
@@ -235,18 +256,39 @@ export const useStore = create<StoreState>()(
           groupId: groupId, // Always use the groupId parameter to ensure consistency
           id: crypto.randomUUID(),
         };
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? { ...g, expenses: [...g.expenses, newExpense] }
               : g
-          ),
-        }));
+          );
+          
+          // If adding expense to a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       updateExpense: (groupId, expenseId, data) => {
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? {
                   ...g,
@@ -257,18 +299,60 @@ export const useStore = create<StoreState>()(
                   ),
                 }
               : g
-          ),
-        }));
+          );
+          
+          // If updating expense in a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       deleteExpense: (groupId, expenseId) => {
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? { ...g, expenses: g.expenses.filter((e) => e.id !== expenseId) }
               : g
-          ),
-        }));
+          );
+          
+          // If deleting expense from a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       addSettlement: (groupId, settlementData) => {
@@ -277,18 +361,39 @@ export const useStore = create<StoreState>()(
           groupId: groupId, // Always use the groupId parameter to ensure consistency
           id: crypto.randomUUID(),
         };
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? { ...g, settlements: [...g.settlements, newSettlement] }
               : g
-          ),
-        }));
+          );
+          
+          // If adding settlement to a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       updateSettlement: (groupId, settlementId, data) => {
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? {
                   ...g,
@@ -297,21 +402,63 @@ export const useStore = create<StoreState>()(
                   ),
                 }
               : g
-          ),
-        }));
+          );
+          
+          // If updating settlement in a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       deleteSettlement: (groupId, settlementId) => {
-        set((state) => ({
-          groups: state.groups.map((g) =>
+        set((state) => {
+          const updatedGroups = state.groups.map((g) =>
             g.id === groupId
               ? {
                   ...g,
                   settlements: g.settlements.filter((s) => s.id !== settlementId),
                 }
               : g
-          ),
-        }));
+          );
+          
+          // If deleting settlement from a source group, update all shared copies
+          const sourceGroup = updatedGroups.find((g) => g.id === groupId && !g.isShared);
+          if (sourceGroup) {
+            return {
+              groups: updatedGroups.map((g) => {
+                if (g.isShared && g.sharedFromGroupId === groupId) {
+                  return {
+                    ...sourceGroup,
+                    id: g.id,
+                    isShared: true,
+                    sharedFromGroupId: groupId,
+                    lastSyncedAt: new Date().toISOString(),
+                  };
+                }
+                return g;
+              }),
+            };
+          }
+          
+          return { groups: updatedGroups };
+        });
       },
 
       addGroupMember: (groupId, memberData) => {

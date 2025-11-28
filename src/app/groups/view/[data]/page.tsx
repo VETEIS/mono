@@ -1,19 +1,26 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
+import Modal from "@/components/Modal";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { decodeGroupFromShare } from "@/utils/share";
+import { useStore } from "@/store/useStore";
 import type { Group } from "@/types";
-import { Eye } from "lucide-react";
+import { Eye, ArrowRight } from "lucide-react";
 
 export default function GroupViewPage() {
   const params = useParams();
+  const router = useRouter();
+  const groups = useStore((state) => state.groups);
+  const addGroup = useStore((state) => state.addGroup);
+  const updateGroup = useStore((state) => state.updateGroup);
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   useEffect(() => {
     const encodedData = params.data as string;
@@ -28,12 +35,43 @@ export default function GroupViewPage() {
         setError("invalid or corrupted share link");
         return;
       }
-      setGroup(decodedGroup);
+      
+      // Mark as shared and set source group ID
+      const sharedGroup: Group = {
+        ...decodedGroup,
+        isShared: true,
+        sharedFromGroupId: decodedGroup.id,
+        lastSyncedAt: new Date().toISOString(),
+      };
+      
+      setGroup(sharedGroup);
+      
+      // Auto-add to groups if not already exists
+      const existingGroup = groups.find((g) => g.id === decodedGroup.id || (g.isShared && g.sharedFromGroupId === decodedGroup.id));
+      if (!existingGroup) {
+        addGroup(sharedGroup);
+      } else {
+        // Update existing shared group with latest data
+        updateGroup(existingGroup.id, {
+          ...sharedGroup,
+          id: existingGroup.id, // Keep the existing ID
+        });
+      }
     } catch (err) {
       setError("failed to load group data");
       console.error(err);
     }
-  }, [params.data]);
+  }, [params.data, groups, addGroup, updateGroup]);
+
+  // Sync with store updates (live updates)
+  useEffect(() => {
+    if (!group) return;
+    
+    const existingGroup = groups.find((g) => g.id === group.id || (g.isShared && g.sharedFromGroupId === group.sharedFromGroupId));
+    if (existingGroup && existingGroup.lastSyncedAt !== group.lastSyncedAt) {
+      setGroup(existingGroup);
+    }
+  }, [groups, group]);
 
   const nets = useMemo(() => {
     if (!group) return [];
@@ -68,6 +106,45 @@ export default function GroupViewPage() {
     if (!group) return [];
     return suggestSettlements(group);
   }, [group]);
+
+  const pairwiseDebts = useMemo(() => {
+    if (!group) return {};
+    return computePairwiseDebts(group);
+  }, [group]);
+
+  const selectedMember = useMemo(() => {
+    if (!group || !selectedMemberId) return null;
+    return group.members.find((m) => m.id === selectedMemberId);
+  }, [group, selectedMemberId]);
+
+  const memberBreakdown = useMemo(() => {
+    if (!group || !selectedMemberId) return [];
+    
+    const breakdown: Array<{ memberId: string; amount: number; type: "owes" | "owed" }> = [];
+    
+    // Calculate net pairwise debts (only show one direction per pair)
+    group.members.forEach((otherMember) => {
+      if (otherMember.id === selectedMemberId) return;
+      
+      const debtFromOther = pairwiseDebts[otherMember.id]?.[selectedMemberId] || 0;
+      const debtToOther = pairwiseDebts[selectedMemberId]?.[otherMember.id] || 0;
+      
+      // Calculate net debt (positive means otherMember owes selectedMember, negative means selectedMember owes otherMember)
+      const netDebt = debtFromOther - debtToOther;
+      
+      if (Math.abs(netDebt) > 0.01) {
+        if (netDebt > 0) {
+          // Other member owes selected member
+          breakdown.push({ memberId: otherMember.id, amount: netDebt, type: "owes" });
+        } else {
+          // Selected member owes other member
+          breakdown.push({ memberId: otherMember.id, amount: Math.abs(netDebt), type: "owed" });
+        }
+      }
+    });
+    
+    return breakdown.sort((a, b) => b.amount - a.amount);
+  }, [group, selectedMemberId, pairwiseDebts]);
 
   if (error) {
     return (
@@ -164,17 +241,12 @@ export default function GroupViewPage() {
                   }
 
                   return (
-                    <div
+                    <button
                       key={member.id}
-                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      onClick={() => setSelectedMemberId(member.id)}
+                      className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                          style={{ backgroundColor: member.avatarColor || "#FCD34D" }}
-                        >
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
                         <span className="text-gray-50 font-medium">{member.name}</span>
                       </div>
                       <div className="text-right">
@@ -194,7 +266,7 @@ export default function GroupViewPage() {
                           {labelText}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -296,6 +368,96 @@ export default function GroupViewPage() {
           </Card>
         </div>
       </main>
+
+      {/* Member Breakdown Modal */}
+      <Modal
+        isOpen={selectedMemberId !== null}
+        onClose={() => setSelectedMemberId(null)}
+        title={selectedMember ? `${selectedMember.name}'s breakdown` : "member breakdown"}
+      >
+        <div className="space-y-4">
+          {memberBreakdown.length === 0 ? (
+            <p className="text-gray-400 text-center py-4">no debts or credits</p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {memberBreakdown
+                  .filter((item) => item.type === "owes")
+                  .map((item) => {
+                    const otherMember = group?.members.find((m) => m.id === item.memberId);
+                    if (!otherMember) return null;
+                    
+                    return (
+                      <div
+                        key={item.memberId}
+                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="font-bold text-green-400">
+                          {formatCurrency(item.amount)}
+                        </p>
+                      </div>
+                    );
+                  })}
+                
+                {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                  <>
+                    <div className="border-t border-[#3A3A3C] pt-2 mt-2">
+                      {memberBreakdown
+                        .filter((item) => item.type === "owed")
+                        .map((item) => {
+                          const otherMember = group?.members.find((m) => m.id === item.memberId);
+                          if (!otherMember) return null;
+                          
+                          return (
+                            <div
+                              key={item.memberId}
+                              className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div>
+                                  <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="font-bold text-red-400">
+                                {formatCurrency(item.amount)}
+                              </p>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </>
+                )}
+                
+                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                  <div className="pt-3 border-t border-[#3A3A3C]">
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-300 font-semibold">total to receive:</p>
+                      <p className="text-green-400 font-bold text-lg">
+                        {formatCurrency(
+                          memberBreakdown
+                            .filter((item) => item.type === "owes")
+                            .reduce((sum, item) => sum + item.amount, 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

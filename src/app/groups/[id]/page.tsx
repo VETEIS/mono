@@ -236,12 +236,6 @@ export default function GroupPage() {
                       className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                          style={{ backgroundColor: member.avatarColor || "#FCD34D" }}
-                        >
-                          {member.name.charAt(0).toUpperCase()}
-                        </div>
                         <span className="text-gray-50 font-medium">
                           {member.name}
                         </span>
@@ -409,12 +403,6 @@ export default function GroupPage() {
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
-                            style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
-                          >
-                            {otherMember.name.charAt(0).toUpperCase()}
-                          </div>
                           <div>
                             <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                             <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -444,12 +432,6 @@ export default function GroupPage() {
                               className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
                             >
                               <div className="flex items-center gap-3">
-                                <div
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
-                                  style={{ backgroundColor: otherMember.avatarColor || "#FCD34D" }}
-                                >
-                                  {otherMember.name.charAt(0).toUpperCase()}
-                                </div>
                                 <div>
                                   <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                                   <p className="text-xs text-gray-500 flex items-center gap-1">
