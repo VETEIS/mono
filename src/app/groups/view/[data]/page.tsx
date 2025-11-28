@@ -17,6 +17,7 @@ export default function GroupViewPage() {
   const router = useRouter();
   const addGroup = useStore((state) => state.addGroup);
   const updateGroup = useStore((state) => state.updateGroup);
+  const deleteGroup = useStore((state) => state.deleteGroup);
   const groups = useStore((state) => state.groups);
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,17 +54,23 @@ export default function GroupViewPage() {
         setError(null);
         setGroup(sharedGroup);
         
-        // Auto-add to user's groups or update if it's a shared group with the same name
-        // This ensures:
-        // 1. Opening the same link multiple times won't create duplicates
-        // 2. Opening a new link with updated data for the same group name will replace the old one
-        // 3. Only one entry exists per shared group name, always with the latest data
-        // Do this after setting the group to avoid race conditions
-        const existingSharedGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
-        if (existingSharedGroup) {
-          // Overwrite the existing shared group with updated data (same name = same group, replace with latest)
+        // Get current groups state to check for duplicates
+        const currentGroups = useStore.getState().groups;
+        
+        // Find ALL existing shared groups with the same name (to handle duplicates)
+        const duplicateSharedGroups = currentGroups.filter(
+          (g) => g.name.toLowerCase().trim() === sharedGroup.name.toLowerCase().trim() && g.isShared
+        );
+        
+        if (duplicateSharedGroups.length > 0) {
+          // Delete all duplicates first
+          duplicateSharedGroups.forEach((dup) => {
+            deleteGroup(dup.id);
+          });
+          
+          // Then add the new one (this ensures we always have the latest data)
           const { id, ...groupWithoutId } = sharedGroup;
-          updateGroup(existingSharedGroup.id, groupWithoutId);
+          addGroup(groupWithoutId);
         } else {
           // Add as new group if no shared group with same name exists
           const { id, ...groupWithoutId } = sharedGroup;
@@ -76,7 +83,7 @@ export default function GroupViewPage() {
     };
     
     loadGroup();
-  }, [params.data, addGroup, updateGroup, groups]);
+  }, [params.data, addGroup, updateGroup, deleteGroup]);
 
   const nets = useMemo(() => {
     if (!group) return [];

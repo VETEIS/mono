@@ -80,21 +80,19 @@ export default function GroupsPage() {
                       </div>
                     </div>
                   </Link>
-                  {!group.readOnly && (
-                    <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDeleteModal(group.id);
-                        }}
-                        className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        delete group
-                      </button>
-                    </div>
-                  )}
+                  <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDeleteModal(group.id);
+                      }}
+                      className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      delete group
+                    </button>
+                  </div>
                 </Card>
               );
             })}
