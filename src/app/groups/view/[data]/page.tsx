@@ -16,6 +16,7 @@ export default function GroupViewPage() {
   const params = useParams();
   const router = useRouter();
   const addGroup = useStore((state) => state.addGroup);
+  const updateGroup = useStore((state) => state.updateGroup);
   const groups = useStore((state) => state.groups);
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +45,14 @@ export default function GroupViewPage() {
       
       setGroup(sharedGroup);
       
-      // Auto-add to user's groups if not already added (check by name to avoid duplicates)
-      const existingGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
-      if (!existingGroup) {
-        // Remove id from sharedGroup since addGroup generates it internally
+      // Auto-add to user's groups or update if it's a shared group with the same name
+      const existingSharedGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
+      if (existingSharedGroup) {
+        // Overwrite the existing shared group with updated data
+        const { id, ...groupWithoutId } = sharedGroup;
+        updateGroup(existingSharedGroup.id, groupWithoutId);
+      } else {
+        // Add as new group if no shared group with same name exists
         const { id, ...groupWithoutId } = sharedGroup;
         addGroup(groupWithoutId);
       }
@@ -55,7 +60,7 @@ export default function GroupViewPage() {
       setError("failed to load group data");
       console.error(err);
     }
-  }, [params.data, addGroup, groups]);
+  }, [params.data, addGroup, updateGroup, groups]);
 
   const nets = useMemo(() => {
     if (!group) return [];
@@ -129,7 +134,7 @@ export default function GroupViewPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen pb-20">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -145,7 +150,7 @@ export default function GroupViewPage() {
 
   if (!group) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen pb-20">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -159,7 +164,7 @@ export default function GroupViewPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20">
       <Header
         title={group.name}
         backHref="/groups"

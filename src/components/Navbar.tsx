@@ -7,11 +7,6 @@ import { Wallet, Receipt, CreditCard, Settings, Users } from "lucide-react";
 export default function Navbar() {
   const pathname = usePathname();
 
-  // Hide navbar on shared group view page (interactive snapshot)
-  if (pathname?.startsWith("/groups/view/")) {
-    return null;
-  }
-
   const navItems = [
     { href: "/", icon: Wallet, label: "wallet" },
     { href: "/debts", icon: CreditCard, label: "debts" },

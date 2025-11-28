@@ -11,11 +11,14 @@ import type { Group } from "@/types";
 export default function NewGroupPage() {
   const router = useRouter();
   const addGroup = useStore((state) => state.addGroup);
-  const addGroupMember = useStore((state) => state.addGroupMember);
+  const groups = useStore((state) => state.groups);
   
   const [name, setName] = useState("");
   const [memberName, setMemberName] = useState("");
   const [members, setMembers] = useState<Array<{ name: string; id: string }>>([]);
+  
+  // Check if group name already exists
+  const nameExists = groups.some((g) => g.name.toLowerCase().trim() === name.toLowerCase().trim());
 
   const handleAddMember = () => {
     if (!memberName.trim()) return;
@@ -32,7 +35,7 @@ export default function NewGroupPage() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || members.length < 2) return;
+    if (!name.trim() || members.length < 2 || nameExists) return;
 
     const createdAt = new Date().toISOString();
     const groupName = name.trim();
@@ -82,9 +85,16 @@ export default function NewGroupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+                className={`w-full px-4 py-3.5 bg-[#1C1C1E] border rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all ${
+                  nameExists && name.trim()
+                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                    : "border-[#3A3A3C] focus:ring-[#FCD34D] focus:border-[#FCD34D]"
+                }`}
                 placeholder="e.g., weekend trip"
               />
+              {nameExists && name.trim() && (
+                <p className="text-red-400 text-xs mt-1.5">this group name already exists</p>
+              )}
             </div>
 
             <div>
@@ -151,7 +161,7 @@ export default function NewGroupPage() {
               </button>
               <button
                 type="submit"
-                disabled={!name.trim() || members.length < 2}
+                disabled={!name.trim() || members.length < 2 || nameExists}
                 className="flex-1 px-5 py-3.5 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-2xl transition-all font-bold active:scale-95 shadow-lg shadow-[#FCD34D]/20"
               >
                 create group
