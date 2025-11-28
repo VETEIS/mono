@@ -425,48 +425,46 @@ export default function GroupPage() {
                   })}
                 
                 {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                  <>
-                    <div className="border-t border-[#3A3A3C] pt-2 mt-2">
-                      {memberBreakdown
-                        .filter((item) => item.type === "owed")
-                        .map((item) => {
-                          const otherMember = group?.members.find((m) => m.id === item.memberId);
-                          if (!otherMember) return null;
-                          
-                          return (
-                            <div
-                              key={item.memberId}
-                              className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <p className="font-bold text-red-400">
-                                  {formatCurrency(item.amount)}
+                  <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
+                    {memberBreakdown
+                      .filter((item) => item.type === "owed")
+                      .map((item) => {
+                        const otherMember = group?.members.find((m) => m.id === item.memberId);
+                        if (!otherMember) return null;
+                        
+                        return (
+                          <div
+                            key={item.memberId}
+                            className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1">
+                                  {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
                                 </p>
-                                {!group?.readOnly && (
-                                  <button
-                                    onClick={() => {
-                                      setSettleTo(item.memberId);
-                                      setSettleAmount(item.amount.toFixed(2));
-                                    }}
-                                    className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
-                                  >
-                                    settle
-                                  </button>
-                                )}
                               </div>
                             </div>
-                          );
-                        })}
-                    </div>
-                  </>
+                            <div className="flex items-center gap-3">
+                              <p className="font-bold text-red-400">
+                                {formatCurrency(item.amount)}
+                              </p>
+                              {!group?.readOnly && (
+                                <button
+                                  onClick={() => {
+                                    setSettleTo(item.memberId);
+                                    setSettleAmount(item.amount.toFixed(2));
+                                  }}
+                                  className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
+                                >
+                                  settle
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
                 )}
                 
                 {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (

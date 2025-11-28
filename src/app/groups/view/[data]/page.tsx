@@ -389,35 +389,33 @@ export default function GroupViewPage() {
                   })}
                 
                 {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                  <>
-                    <div className="border-t border-[#3A3A3C] pt-2 mt-2">
-                      {memberBreakdown
-                        .filter((item) => item.type === "owed")
-                        .map((item) => {
-                          const otherMember = group?.members.find((m) => m.id === item.memberId);
-                          if (!otherMember) return null;
-                          
-                          return (
-                            <div
-                              key={item.memberId}
-                              className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
-                                  </p>
-                                </div>
+                  <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
+                    {memberBreakdown
+                      .filter((item) => item.type === "owed")
+                      .map((item) => {
+                        const otherMember = group?.members.find((m) => m.id === item.memberId);
+                        if (!otherMember) return null;
+                        
+                        return (
+                          <div
+                            key={item.memberId}
+                            className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1">
+                                  {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                </p>
                               </div>
-                              <p className="font-bold text-red-400">
-                                {formatCurrency(item.amount)}
-                              </p>
                             </div>
-                          );
-                        })}
-                    </div>
-                  </>
+                            <p className="font-bold text-red-400">
+                              {formatCurrency(item.amount)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                  </div>
                 )}
                 
                 {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
