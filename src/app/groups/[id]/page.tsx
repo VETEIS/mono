@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Sparkles, Share2, ArrowRight, Send } from "lucide-react";
+import { Plus, Sparkles, Share2, ArrowRight, Send, Eye } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { generateShareUrl } from "@/utils/share";
@@ -162,31 +162,38 @@ export default function GroupPage() {
         title={group.name}
         backHref="/groups"
         action={
-          <div className="flex items-center gap-2">
-            {suggestions.length > 0 && (
+          group.readOnly ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg">
+              <Eye className="w-4 h-4 text-[#FCD34D]" />
+              <span className="text-xs font-semibold text-[#FCD34D]">read-only</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              {suggestions.length > 0 && (
+                <button
+                  onClick={() => setShowSuggestions(true)}
+                  className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
+                  title="suggest settlements"
+                >
+                  <Sparkles className="w-5 h-5 text-[#FCD34D]" />
+                </button>
+              )}
               <button
-                onClick={() => setShowSuggestions(true)}
+                onClick={() => setShowShare(true)}
                 className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-                title="suggest settlements"
+                title="share group"
               >
-                <Sparkles className="w-5 h-5 text-[#FCD34D]" />
+                <Share2 className="w-5 h-5 text-[#FCD34D]" />
               </button>
-            )}
-            <button
-              onClick={() => setShowShare(true)}
-              className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-              title="share group"
-            >
-              <Share2 className="w-5 h-5 text-[#FCD34D]" />
-            </button>
-            <Link
-              href={`/groups/${group.id}/expense/new`}
-              className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-              title="add expense"
-            >
-              <Plus className="w-6 h-6 text-[#FCD34D]" />
-            </Link>
-          </div>
+              <Link
+                href={`/groups/${group.id}/expense/new`}
+                className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
+                title="add expense"
+              >
+                <Plus className="w-6 h-6 text-[#FCD34D]" />
+              </Link>
+            </div>
+          )
         }
       />
 
@@ -443,15 +450,17 @@ export default function GroupPage() {
                                 <p className="font-bold text-red-400">
                                   {formatCurrency(item.amount)}
                                 </p>
-                                <button
-                                  onClick={() => {
-                                    setSettleTo(item.memberId);
-                                    setSettleAmount(item.amount.toFixed(2));
-                                  }}
-                                  className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
-                                >
-                                  settle
-                                </button>
+                                {!group?.readOnly && (
+                                  <button
+                                    onClick={() => {
+                                      setSettleTo(item.memberId);
+                                      setSettleAmount(item.amount.toFixed(2));
+                                    }}
+                                    className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
+                                  >
+                                    settle
+                                  </button>
+                                )}
                               </div>
                             </div>
                           );
@@ -602,7 +611,7 @@ export default function GroupPage() {
                       className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
                     >
                       <Send className="w-4 h-4" />
-                      send
+                      share
                     </button>
                   </div>
                 </div>

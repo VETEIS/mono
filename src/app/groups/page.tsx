@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Users, Trash2 } from "lucide-react";
+import { Plus, Users, Trash2, Eye } from "lucide-react";
 
 export default function GroupsPage() {
   const groups = useStore((state) => state.groups);
@@ -62,9 +62,17 @@ export default function GroupsPage() {
                 <Card key={group.id} hover>
                   <Link href={`/groups/${group.id}`} className="block">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-50 mb-1">
-                        {group.name}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-xl font-bold text-gray-50">
+                          {group.name}
+                        </h3>
+                        {group.readOnly && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg">
+                            <Eye className="w-3 h-3 text-[#FCD34D]" />
+                            <span className="text-xs font-semibold text-[#FCD34D]">read-only</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex items-center gap-4 text-sm text-gray-400">
                         <span>{group.members.length} members</span>
                         <span>•</span>
@@ -72,19 +80,21 @@ export default function GroupsPage() {
                       </div>
                     </div>
                   </Link>
-                  <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDeleteModal(group.id);
-                      }}
-                      className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      delete group
-                    </button>
-                  </div>
+                  {!group.readOnly && (
+                    <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDeleteModal(group.id);
+                        }}
+                        className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        delete group
+                      </button>
+                    </div>
+                  )}
                 </Card>
               );
             })}

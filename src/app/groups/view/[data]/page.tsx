@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
@@ -13,199 +13,50 @@ import type { Group } from "@/types";
 import { Eye, ArrowRight } from "lucide-react";
 
 export default function GroupViewPage() {
+  const params = useParams();
   const router = useRouter();
-  const groups = useStore((state) => state.groups);
   const addGroup = useStore((state) => state.addGroup);
-  const updateGroup = useStore((state) => state.updateGroup);
+  const groups = useStore((state) => state.groups);
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>("");
-  const [mounted, setMounted] = useState(false);
-  
-  // Prevent hydration mismatch by only processing after mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
-    // Only process after component is mounted to avoid hydration issues
-    if (!mounted || typeof window === "undefined") return;
-    
-    // Get search params directly from window.location to avoid SSR issues
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Check for chunked data first (for very long groups)
-    const chunksParam = urlParams.get("chunks");
-    if (chunksParam) {
-      const numChunks = parseInt(chunksParam, 10);
-      if (numChunks > 0) {
-        // Reconstruct the encoded data from chunks
-        const chunks: string[] = [];
-        for (let i = 0; i < numChunks; i++) {
-          const chunk = urlParams.get(`data${i}`);
-          if (chunk) {
-            chunks.push(chunk);
-          }
-        }
-        
-        if (chunks.length === numChunks) {
-          const encodedData = chunks.join("");
-          try {
-            const decodedGroup = decodeGroupFromShare(encodedData);
-            if (decodedGroup) {
-              const sharedGroup: Group = {
-                ...decodedGroup,
-                isShared: true,
-                sharedFromGroupId: decodedGroup.id,
-                lastSyncedAt: new Date().toISOString(),
-              };
-              setGroup(sharedGroup);
-              
-              // Auto-add or update existing shared group
-              const existingGroup = groups.find((g) => 
-                (g.isShared && g.sharedFromGroupId === decodedGroup.id) || 
-                g.id === decodedGroup.id
-              );
-              
-              if (!existingGroup) {
-                addGroup(sharedGroup);
-              } else {
-                // Update existing shared group with latest data from new share link
-                updateGroup(existingGroup.id, {
-                  ...decodedGroup,
-                  id: existingGroup.id,
-                  isShared: true,
-                  sharedFromGroupId: decodedGroup.id,
-                  lastSyncedAt: new Date().toISOString(),
-                });
-                setGroup({
-                  ...decodedGroup,
-                  id: existingGroup.id,
-                  isShared: true,
-                  sharedFromGroupId: decodedGroup.id,
-                  lastSyncedAt: new Date().toISOString(),
-                });
-              }
-              return;
-            }
-          } catch (err) {
-            console.error("Error decoding chunked data:", err);
-          }
-        }
-      }
-    }
-    
-    // Standard URL-encoded data (single parameter)
-    let rawData = urlParams.get("data");
-    
-    // Last resort: try parsing from full URL using regex
-    if (!rawData) {
-      const fullUrl = window.location.href;
-      const match = fullUrl.match(/[?&]data=([^&]+)/);
-      if (match) {
-        rawData = match[1];
-      }
-    }
-    
-    if (!rawData) {
-      const fullUrl = window.location.href;
-      const searchStr = urlParams.toString();
-      const debugMsg = `URL: ${fullUrl.substring(0, 200)}...\nSearch: ${searchStr}\nNo data or id parameter found.`;
-      console.error("No data parameter found in URL");
-      console.error("Full URL:", fullUrl);
-      console.error("Search params:", searchStr);
-      setDebugInfo(debugMsg);
-      setError("invalid share link - no data parameter found");
+    const encodedData = params.data as string;
+    if (!encodedData) {
+      setError("invalid share link");
       return;
     }
 
-    console.log("Loading shared group from URL, encoded data length:", rawData.length);
-    console.log("First 100 chars:", rawData.substring(0, 100));
-    console.log("Last 50 chars:", rawData.substring(Math.max(0, rawData.length - 50)));
-
     try {
-      const decodedGroup = decodeGroupFromShare(rawData);
+      const decodedGroup = decodeGroupFromShare(encodedData);
       if (!decodedGroup) {
-        console.error("Failed to decode group - decodeGroupFromShare returned null");
-        const debugMsg = `Data length: ${rawData.length}\nFirst 50 chars: ${rawData.substring(0, 50)}\nLast 50 chars: ${rawData.substring(Math.max(0, rawData.length - 50))}\nFailed to decompress/parse data.`;
-        setDebugInfo(debugMsg);
         setError("invalid or corrupted share link");
         return;
       }
       
-      console.log("Successfully decoded group:", decodedGroup.name);
-      
-      // Mark as shared and set source group ID
+      // Mark as shared/read-only
       const sharedGroup: Group = {
         ...decodedGroup,
+        readOnly: true,
         isShared: true,
-        sharedFromGroupId: decodedGroup.id,
-        lastSyncedAt: new Date().toISOString(),
       };
       
       setGroup(sharedGroup);
       
-      // Auto-add to groups if not already exists, or update if it does
-      const existingGroup = groups.find((g) => 
-        (g.isShared && g.sharedFromGroupId === decodedGroup.id) || 
-        g.id === decodedGroup.id
-      );
-      
+      // Auto-add to user's groups if not already added (check by name to avoid duplicates)
+      const existingGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
       if (!existingGroup) {
-        // New shared group - add it
-        addGroup(sharedGroup);
-      } else {
-        // Existing shared group - update it with latest data from the new share link
-        // This ensures the shared group gets updated when source owner shares a new link
-        updateGroup(existingGroup.id, {
-          ...decodedGroup, // Use fresh data from the URL
-          id: existingGroup.id, // Keep the existing ID in friend's device
-          isShared: true,
-          sharedFromGroupId: decodedGroup.id, // Keep reference to source
-          lastSyncedAt: new Date().toISOString(),
-        });
-        // Also update local state to reflect the update
-        setGroup({
-          ...decodedGroup,
-          id: existingGroup.id,
-          isShared: true,
-          sharedFromGroupId: decodedGroup.id,
-          lastSyncedAt: new Date().toISOString(),
+        addGroup({
+          ...sharedGroup,
+          id: crypto.randomUUID(), // Generate new ID to avoid conflicts
         });
       }
     } catch (err) {
-      console.error("Error loading shared group:", err);
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      const debugMsg = `Error: ${errorMsg}\nURL: ${typeof window !== "undefined" ? window.location.href.substring(0, 200) : "N/A"}...`;
-      setDebugInfo(debugMsg);
-      if (err instanceof Error) {
-        console.error("Error message:", err.message);
-        console.error("Error stack:", err.stack);
-      }
       setError("failed to load group data");
+      console.error(err);
     }
-  }, [mounted, groups, addGroup, updateGroup]);
-
-  // Sync with store updates (when shared group is updated from a new share link)
-  useEffect(() => {
-    if (!group || !mounted) return;
-    
-    // Find the shared group in store (might have been updated)
-    const existingGroup = groups.find((g) => 
-      (g.isShared && g.sharedFromGroupId === group.sharedFromGroupId) || 
-      g.id === group.id
-    );
-    
-    // If the store version is newer (more recent lastSyncedAt), use it
-    if (existingGroup && existingGroup.lastSyncedAt && group.lastSyncedAt) {
-      const storeTime = new Date(existingGroup.lastSyncedAt).getTime();
-      const currentTime = new Date(group.lastSyncedAt).getTime();
-      if (storeTime > currentTime) {
-        setGroup(existingGroup);
-      }
-    }
-  }, [groups, group, mounted]);
+  }, [params.data, addGroup, groups]);
 
   const nets = useMemo(() => {
     if (!group) return [];
@@ -246,10 +97,7 @@ export default function GroupViewPage() {
     return computePairwiseDebts(group);
   }, [group]);
 
-  const selectedMember = useMemo(() => {
-    if (!group || !selectedMemberId) return null;
-    return group.members.find((m) => m.id === selectedMemberId);
-  }, [group, selectedMemberId]);
+  const selectedMember = group?.members.find((m) => m.id === selectedMemberId);
 
   const memberBreakdown = useMemo(() => {
     if (!group || !selectedMemberId) return [];
@@ -280,41 +128,15 @@ export default function GroupViewPage() {
     return breakdown.sort((a, b) => b.amount - a.amount);
   }, [group, selectedMemberId, pairwiseDebts]);
 
-  // Show nothing during SSR to prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
-
   if (error) {
     return (
       <div className="min-h-screen pb-20">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
-            <div className="text-gray-400 py-10">
-              <div className="text-center mb-4">
-                <p className="text-lg mb-2">{error}</p>
-                <p className="text-sm">please request a new share link from the group owner.</p>
-              </div>
-              {debugInfo && (
-                <div className="mt-6 p-4 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl">
-                  <p className="text-xs font-semibold text-gray-300 mb-2">debug information:</p>
-                  <pre className="text-xs text-gray-400 whitespace-pre-wrap break-all font-mono">
-                    {debugInfo}
-                  </pre>
-                  <p className="text-xs text-gray-500 mt-3">
-                    please share this information with the group owner to help fix the issue.
-                  </p>
-                </div>
-              )}
-              {mounted && typeof window !== "undefined" && (
-                <div className="mt-4 p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-lg">
-                  <p className="text-xs text-gray-500 mb-2">url information:</p>
-                  <p className="text-xs text-gray-400 break-all mb-1">full url: {window.location.href}</p>
-                  <p className="text-xs text-gray-400">has data param: {new URLSearchParams(window.location.search).has("data") ? "Yes" : "No"}</p>
-                  <p className="text-xs text-gray-400">url length: {window.location.href.length} characters</p>
-                </div>
-              )}
+            <div className="text-gray-400 text-center py-10">
+              <p className="text-lg mb-2">{error}</p>
+              <p className="text-sm">please request a new share link from the group owner.</p>
             </div>
           </Card>
         </main>
@@ -529,7 +351,7 @@ export default function GroupViewPage() {
         </div>
       </main>
 
-      {/* Member Breakdown Modal */}
+      {/* Member Breakdown Modal (Read-only) */}
       <Modal
         isOpen={selectedMemberId !== null}
         onClose={() => setSelectedMemberId(null)}
@@ -621,5 +443,4 @@ export default function GroupViewPage() {
     </div>
   );
 }
-
 

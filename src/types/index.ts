@@ -86,8 +86,7 @@ export interface Group {
   settlements: Settlement[];
   notes?: string;
   settings?: GroupSettings;
-  isShared?: boolean; // true if this is a shared group (read-only copy)
-  sharedFromGroupId?: string; // ID of the source group this was shared from
-  lastSyncedAt?: string; // ISO string - when this shared group was last synced
+  readOnly?: boolean; // true if this is a shared/read-only group
+  isShared?: boolean; // true if this group was added from a shared link
 }
 
