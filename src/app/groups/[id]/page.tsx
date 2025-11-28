@@ -413,7 +413,7 @@ export default function GroupPage() {
                           </div>
                           <div>
                             <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                            <p className="text-xs text-gray-500">owes you</p>
+                            <p className="text-xs text-gray-500">owes {selectedMember?.name}</p>
                           </div>
                         </div>
                         <p className="font-bold text-green-400">
@@ -446,7 +446,7 @@ export default function GroupPage() {
                                 </div>
                                 <div>
                                   <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                  <p className="text-xs text-gray-500">owed by you</p>
+                                  <p className="text-xs text-gray-500">{selectedMember?.name} owes {otherMember.name}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">

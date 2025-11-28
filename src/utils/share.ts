@@ -8,8 +8,10 @@ import type { Group } from "@/types";
 export function encodeGroupForShare(group: Group): string {
   try {
     const jsonString = JSON.stringify(group);
-    const compressed = LZString.compressToEncodedURIComponent(jsonString);
-    return compressed;
+    // Use compressToBase64 and then encode for URL safety
+    const compressed = LZString.compressToBase64(jsonString);
+    // Encode for URL (handles special characters)
+    return encodeURIComponent(compressed);
   } catch (error) {
     console.error("Error encoding group for share:", error);
     throw new Error("Failed to encode group data");
@@ -22,7 +24,17 @@ export function encodeGroupForShare(group: Group): string {
  */
 export function decodeGroupFromShare(encoded: string): Group | null {
   try {
-    const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+    // Decode URL component first (Next.js might have decoded it, but we need to handle both cases)
+    let decoded = encoded;
+    try {
+      // Try decoding in case it's still encoded
+      decoded = decodeURIComponent(encoded);
+    } catch {
+      // If already decoded, use as is
+      decoded = encoded;
+    }
+    
+    const decompressed = LZString.decompressFromBase64(decoded);
     if (!decompressed) {
       return null;
     }
