@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "@/store/useStore";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
@@ -12,6 +12,12 @@ export default function GroupsPage() {
   const groups = useStore((state) => state.groups);
   const deleteGroup = useStore((state) => state.deleteGroup);
   const [deleteModal, setDeleteModal] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Wait for hydration to complete before showing content
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleDelete = (groupId: string) => {
     deleteGroup(groupId);
@@ -33,7 +39,7 @@ export default function GroupsPage() {
       />
 
       <main className="p-5">
-        {groups.length === 0 ? (
+        {!mounted ? null : groups.length === 0 ? (
           <Card>
             <div className="text-gray-400 text-center py-10">
               <Users className="w-16 h-16 mx-auto mb-4 text-gray-500" />
