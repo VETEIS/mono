@@ -30,6 +30,9 @@ export default function GroupViewPage() {
         return;
       }
 
+      // Clear any previous error
+      setError(null);
+      
       try {
         // Fetch group data from dpaste.com
         const decodedGroup = await fetchGroupFromGist(encodedData);
@@ -46,12 +49,19 @@ export default function GroupViewPage() {
           isShared: true,
         };
         
+        // Clear any error and set group to show the content
+        setError(null);
         setGroup(sharedGroup);
         
         // Auto-add to user's groups or update if it's a shared group with the same name
+        // This ensures:
+        // 1. Opening the same link multiple times won't create duplicates
+        // 2. Opening a new link with updated data for the same group name will replace the old one
+        // 3. Only one entry exists per shared group name, always with the latest data
+        // Do this after setting the group to avoid race conditions
         const existingSharedGroup = groups.find((g) => g.name === sharedGroup.name && g.isShared);
         if (existingSharedGroup) {
-          // Overwrite the existing shared group with updated data
+          // Overwrite the existing shared group with updated data (same name = same group, replace with latest)
           const { id, ...groupWithoutId } = sharedGroup;
           updateGroup(existingSharedGroup.id, groupWithoutId);
         } else {
@@ -60,8 +70,8 @@ export default function GroupViewPage() {
           addGroup(groupWithoutId);
         }
       } catch (err) {
+        console.error("Error loading group:", err);
         setError("failed to load group data");
-        console.error(err);
       }
     };
     
@@ -138,7 +148,24 @@ export default function GroupViewPage() {
     return breakdown.sort((a, b) => b.amount - a.amount);
   }, [group, selectedMemberId, pairwiseDebts]);
 
-  if (error) {
+  // Show loading state only if we don't have a group and there's no error yet
+  if (!group && !error) {
+    return (
+      <div className="min-h-screen pb-20">
+        <Header title="group view" backHref="/groups" />
+        <main className="p-5">
+          <Card>
+            <div className="text-gray-400 text-center py-10">
+              <p className="text-sm">loading...</p>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // Show error only if we have an error and no group
+  if (error && !group) {
     return (
       <div className="min-h-screen pb-20">
         <Header title="group view" backHref="/groups" />
@@ -154,19 +181,9 @@ export default function GroupViewPage() {
     );
   }
 
+  // If we have a group, show it (even if there was a transient error)
   if (!group) {
-    return (
-      <div className="min-h-screen pb-20">
-        <Header title="group view" backHref="/groups" />
-        <main className="p-5">
-          <Card>
-            <div className="text-gray-400 text-center py-10">
-              <p className="text-sm">loading...</p>
-            </div>
-          </Card>
-        </main>
-      </div>
-    );
+    return null;
   }
 
   return (
