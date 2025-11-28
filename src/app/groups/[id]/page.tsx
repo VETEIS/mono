@@ -258,9 +258,10 @@ export default function GroupPage() {
                   }
 
                   return (
-                    <div
+                    <button
                       key={member.id}
-                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      onClick={() => setSelectedMemberId(member.id)}
+                      className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
                         <div
@@ -269,12 +270,9 @@ export default function GroupPage() {
                         >
                           {member.name.charAt(0).toUpperCase()}
                         </div>
-                        <button
-                          onClick={() => setSelectedMemberId(member.id)}
-                          className="text-gray-50 font-medium hover:text-[#FCD34D] transition-colors text-left"
-                        >
+                        <span className="text-gray-50 font-medium">
                           {member.name}
-                        </button>
+                        </span>
                       </div>
                       <div className="text-right">
                         <p
@@ -293,7 +291,7 @@ export default function GroupPage() {
                           {labelText}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
