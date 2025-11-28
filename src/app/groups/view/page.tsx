@@ -71,7 +71,7 @@ function GroupViewContent() {
       }
       setError("failed to load group data");
     }
-  }, [params.data, groups, addGroup, updateGroup]);
+  }, [searchParams, groups, addGroup, updateGroup]);
 
   // Sync with store updates (live updates)
   useEffect(() => {
