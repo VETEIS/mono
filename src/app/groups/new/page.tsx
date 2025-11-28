@@ -17,14 +17,22 @@ export default function NewGroupPage() {
   const [memberName, setMemberName] = useState("");
   const [members, setMembers] = useState<Array<{ name: string; id: string }>>([]);
   
-  // Check if group name already exists
-  const nameExists = groups.some((g) => g.name.toLowerCase().trim() === name.toLowerCase().trim());
+  // Check if group name already exists (real-time validation)
+  const nameExists = name.trim() && groups.some((g) => g.name.toLowerCase().trim() === name.toLowerCase().trim());
+  
+  // Check if member name already exists in current members list (real-time validation)
+  const memberNameExists = memberName.trim() && members.some((m) => m.name.toLowerCase().trim() === memberName.toLowerCase().trim());
 
   const handleAddMember = () => {
     if (!memberName.trim()) return;
+    // Check if member name already exists
+    const trimmedName = memberName.trim();
+    const nameExists = members.some((m) => m.name.toLowerCase().trim() === trimmedName.toLowerCase());
+    if (nameExists) return; // Don't add duplicate member
+    
     setMembers([
       ...members,
-      { name: memberName.trim(), id: crypto.randomUUID() },
+      { name: trimmedName, id: crypto.randomUUID() },
     ]);
     setMemberName("");
   };
@@ -35,7 +43,11 @@ export default function NewGroupPage() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || members.length < 2 || nameExists) return;
+    // Final validation check
+    const trimmedName = name.trim();
+    const finalNameExists = groups.some((g) => g.name.toLowerCase().trim() === trimmedName.toLowerCase());
+    
+    if (!trimmedName || members.length < 2 || finalNameExists) return;
 
     const createdAt = new Date().toISOString();
     const groupName = name.trim();
@@ -112,13 +124,18 @@ export default function NewGroupPage() {
                       handleAddMember();
                     }
                   }}
-                  className="flex-1 min-w-0 px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+                  className={`flex-1 min-w-0 px-4 py-3.5 bg-[#1C1C1E] border rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all ${
+                    memberNameExists
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#3A3A3C] focus:ring-[#FCD34D] focus:border-[#FCD34D]"
+                  }`}
                   placeholder="member name"
                 />
                 <button
                   type="button"
                   onClick={handleAddMember}
-                  className="flex-shrink-0 px-4 sm:px-6 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] hover:bg-[#2C2C2E] hover:border-[#4A4A4C] text-gray-200 rounded-2xl transition-all font-semibold active:scale-95 whitespace-nowrap"
+                  disabled={!memberName.trim() || memberNameExists}
+                  className="flex-shrink-0 px-4 sm:px-6 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] hover:bg-[#2C2C2E] hover:border-[#4A4A4C] disabled:opacity-50 disabled:cursor-not-allowed text-gray-200 rounded-2xl transition-all font-semibold active:scale-95 whitespace-nowrap"
                 >
                   add
                 </button>
@@ -144,6 +161,9 @@ export default function NewGroupPage() {
                 </div>
               )}
               
+              {memberNameExists && (
+                <p className="text-red-400 text-xs mt-1.5">this member name already exists</p>
+              )}
               {members.length < 2 && (
                 <p className="text-sm text-gray-500 mt-2">
                   add at least 2 members to create a group
