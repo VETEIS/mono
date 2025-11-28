@@ -45,7 +45,8 @@ export default function NewGroupPage() {
     e.preventDefault();
     // Final validation check
     const trimmedName = name.trim();
-    const finalNameExists = groups.some((g) => g.name.toLowerCase().trim() === trimmedName.toLowerCase());
+    const currentGroups = useStore.getState().groups;
+    const finalNameExists = currentGroups.some((g) => g.name.toLowerCase().trim() === trimmedName.toLowerCase());
     
     if (!trimmedName || members.length < 2 || finalNameExists) return;
 
