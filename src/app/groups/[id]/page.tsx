@@ -513,20 +513,9 @@ export default function GroupPage() {
                             <p className="text-xs text-gray-500">owes you</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <p className="font-bold text-red-400">
-                            {formatCurrency(item.amount)}
-                          </p>
-                          <button
-                            onClick={() => {
-                              setSettleTo(item.memberId);
-                              setSettleAmount(item.amount.toFixed(2));
-                            }}
-                            className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
-                          >
-                            settle
-                          </button>
-                        </div>
+                        <p className="font-bold text-green-400">
+                          {formatCurrency(item.amount)}
+                        </p>
                       </div>
                     );
                   })}
@@ -557,9 +546,20 @@ export default function GroupPage() {
                                   <p className="text-xs text-gray-500">owed by you</p>
                                 </div>
                               </div>
-                              <p className="font-bold text-green-400">
-                                {formatCurrency(item.amount)}
-                              </p>
+                              <div className="flex items-center gap-3">
+                                <p className="font-bold text-red-400">
+                                  {formatCurrency(item.amount)}
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    setSettleTo(item.memberId);
+                                    setSettleAmount(item.amount.toFixed(2));
+                                  }}
+                                  className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
+                                >
+                                  settle
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -618,7 +618,7 @@ export default function GroupPage() {
                       disabled={!settleAmount || parseFloat(settleAmount) <= 0}
                       className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
                     >
-                      confirm settlement
+                      confirm
                     </button>
                   </div>
                 </div>
