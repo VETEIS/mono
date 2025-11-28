@@ -29,14 +29,16 @@ export default function NewExpensePage() {
   const distributeEqually = (total: number, memberIds: string[]): Record<string, number> => {
     if (memberIds.length === 0) return {};
     
-    const perPerson = total / memberIds.length;
-    const roundedPerPerson = Math.floor(perPerson * 100) / 100; // Round down to 2 decimals
-    const remainder = Math.round((total - roundedPerPerson * memberIds.length) * 100) / 100;
+    // Use integer arithmetic to avoid floating point errors
+    const totalCents = Math.round(total * 100);
+    const perPersonCents = Math.floor(totalCents / memberIds.length);
+    const remainderCents = totalCents - (perPersonCents * memberIds.length);
     
     const result: Record<string, number> = {};
     memberIds.forEach((id, index) => {
-      // Add remainder to the first member to ensure total is exact
-      result[id] = roundedPerPerson + (index === 0 ? remainder : 0);
+      // Distribute remainder cents to the first few members
+      const personCents = perPersonCents + (index < remainderCents ? 1 : 0);
+      result[id] = Math.round(personCents) / 100; // Convert back to dollars with 2 decimals
     });
     
     return result;
