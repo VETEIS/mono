@@ -1,7 +1,7 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
@@ -12,8 +12,7 @@ import { useStore } from "@/store/useStore";
 import type { Group } from "@/types";
 import { Eye, ArrowRight } from "lucide-react";
 
-function GroupViewContent() {
-  const searchParams = useSearchParams();
+export default function GroupViewPage() {
   const router = useRouter();
   const groups = useStore((state) => state.groups);
   const addGroup = useStore((state) => state.addGroup);
@@ -31,17 +30,20 @@ function GroupViewContent() {
 
   useEffect(() => {
     // Only process after component is mounted to avoid hydration issues
-    if (!mounted) return;
+    if (!mounted || typeof window === "undefined") return;
+    
+    // Get search params directly from window.location to avoid SSR issues
+    const urlParams = new URLSearchParams(window.location.search);
     
     // Check for chunked data first (for very long groups)
-    const chunksParam = searchParams.get("chunks");
+    const chunksParam = urlParams.get("chunks");
     if (chunksParam) {
       const numChunks = parseInt(chunksParam, 10);
       if (numChunks > 0) {
         // Reconstruct the encoded data from chunks
         const chunks: string[] = [];
         for (let i = 0; i < numChunks; i++) {
-          const chunk = searchParams.get(`data${i}`);
+          const chunk = urlParams.get(`data${i}`);
           if (chunk) {
             chunks.push(chunk);
           }
@@ -79,17 +81,10 @@ function GroupViewContent() {
     }
     
     // Standard URL-encoded data (single parameter)
-    const encodedData = searchParams.get("data");
+    let rawData = urlParams.get("data");
     
-    // Also try getting from window.location as fallback
-    let rawData = encodedData;
-    if (!rawData && typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      rawData = urlParams.get("data");
-    }
-    
-    // Last resort: try parsing from hash or full URL
-    if (!rawData && typeof window !== "undefined") {
+    // Last resort: try parsing from full URL using regex
+    if (!rawData) {
       const fullUrl = window.location.href;
       const match = fullUrl.match(/[?&]data=([^&]+)/);
       if (match) {
@@ -98,8 +93,8 @@ function GroupViewContent() {
     }
     
     if (!rawData) {
-      const fullUrl = typeof window !== "undefined" ? window.location.href : "N/A";
-      const searchStr = searchParams.toString();
+      const fullUrl = window.location.href;
+      const searchStr = urlParams.toString();
       const debugMsg = `URL: ${fullUrl.substring(0, 200)}...\nSearch: ${searchStr}\nNo data or id parameter found.`;
       console.error("No data parameter found in URL");
       console.error("Full URL:", fullUrl);
@@ -157,7 +152,7 @@ function GroupViewContent() {
       }
       setError("failed to load group data");
     }
-  }, [mounted, searchParams, groups, addGroup, updateGroup]);
+  }, [mounted, groups, addGroup, updateGroup]);
 
   // Sync with store updates (live updates)
   useEffect(() => {
@@ -280,11 +275,11 @@ function GroupViewContent() {
                   </p>
                 </div>
               )}
-              {typeof window !== "undefined" && (
+              {mounted && typeof window !== "undefined" && (
                 <div className="mt-4 p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-lg">
                   <p className="text-xs text-gray-500 mb-2">url information:</p>
                   <p className="text-xs text-gray-400 break-all mb-1">full url: {window.location.href}</p>
-                  <p className="text-xs text-gray-400">has data param: {searchParams.has("data") ? "Yes" : "No"}</p>
+                  <p className="text-xs text-gray-400">has data param: {new URLSearchParams(window.location.search).has("data") ? "Yes" : "No"}</p>
                   <p className="text-xs text-gray-400">url length: {window.location.href.length} characters</p>
                 </div>
               )}
@@ -595,22 +590,4 @@ function GroupViewContent() {
   );
 }
 
-export default function GroupViewPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen pb-20">
-        <Header title="group view" backHref="/groups" />
-        <main className="p-5">
-          <Card>
-            <div className="text-gray-400 text-center py-10">
-              <p className="text-sm">loading...</p>
-            </div>
-          </Card>
-        </main>
-      </div>
-    }>
-      <GroupViewContent />
-    </Suspense>
-  );
-}
 
