@@ -180,13 +180,46 @@ export default function GroupPage() {
                   <Sparkles className="w-5 h-5 text-[#FCD34D]" />
                 </button>
               )}
-              <button
-                onClick={() => setShowShare(true)}
-                className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-                title="share group"
-              >
-                <Share2 className="w-5 h-5 text-[#FCD34D]" />
-              </button>
+            <button
+              onClick={async () => {
+                if (!group) return;
+                setIsGeneratingShare(true);
+                try {
+                  // Create gist and get shareable URL
+                  const gistUrl = await createGroupGist(group);
+                  
+                  if (!gistUrl) {
+                    alert("Failed to generate share link. Please try again.");
+                    setIsGeneratingShare(false);
+                    return;
+                  }
+                  
+                  // Extract gist ID from the gist URL and create our app URL
+                  let appShareUrl = gistUrl;
+                  const gistIdMatch = gistUrl.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/i) || 
+                                     gistUrl.match(/gist\.github\.com\/([a-f0-9]+)/i);
+                  if (gistIdMatch) {
+                    const gistId = gistIdMatch[1];
+                    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+                    appShareUrl = `${baseUrl}/groups/view/${gistId}`;
+                  }
+                  
+                  setShareUrl(appShareUrl);
+                  setShowShare(true);
+                } catch (error) {
+                  console.error("Error generating share URL:", error);
+                  const errorMessage = error instanceof Error ? error.message : "Failed to generate share link. Please try again.";
+                  alert(errorMessage);
+                } finally {
+                  setIsGeneratingShare(false);
+                }
+              }}
+              disabled={isGeneratingShare}
+              className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="share group"
+            >
+              <Share2 className="w-5 h-5 text-[#FCD34D]" />
+            </button>
               <Link
                 href={`/groups/${group.id}/expense/new`}
                 className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
@@ -557,87 +590,46 @@ export default function GroupPage() {
                       ref={shareUrlRef}
                       type="text"
                       readOnly
-                      value={shareUrl || (isGeneratingShare ? "generating link..." : "click share button to generate link")}
+                      value={shareUrl || (isGeneratingShare ? "generating link..." : "click share button in header to generate link")}
                       className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
                     />
                     <button
                       onClick={async (e) => {
                         e.preventDefault();
-                        if (!group) return;
+                        if (!shareUrl) return;
                         
-                        setIsGeneratingShare(true);
-                        try {
-                          // Create gist and get shareable URL
-                          const gistUrl = await createGroupGist(group);
-                          
-                          if (!gistUrl) {
-                            alert("Failed to generate share link. Please try again.");
-                            setIsGeneratingShare(false);
-                            return;
-                          }
-                          
-                          // Extract gist ID from the gist URL and create our app URL
-                          let appShareUrl = gistUrl;
-                          const gistIdMatch = gistUrl.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/i) || 
-                                             gistUrl.match(/gist\.github\.com\/([a-f0-9]+)/i);
-                          if (gistIdMatch) {
-                            const gistId = gistIdMatch[1];
-                            const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-                            appShareUrl = `${baseUrl}/groups/view/${gistId}`;
-                          }
-                          
-                          setShareUrl(appShareUrl);
-                          
-                          // Check if Web Share API is supported (mobile devices)
-                          if (typeof navigator !== "undefined" && navigator.share) {
-                            try {
-                              await navigator.share({
-                                title: `${group.name} - Group Share`,
-                                text: `Check out this group: ${group.name}`,
-                                url: appShareUrl,
-                              });
-                            } catch (err) {
-                              // User cancelled or error occurred
-                              if ((err as Error).name !== "AbortError") {
-                                console.error("Error sharing:", err);
-                                // Fallback to copy if share fails
-                                if (shareUrlRef.current) {
-                                  shareUrlRef.current.select();
-                                  shareUrlRef.current.setSelectionRange(0, 99999);
-                                  try {
-                                    await navigator.clipboard.writeText(appShareUrl);
-                                  } catch {
-                                    document.execCommand("copy");
-                                  }
+                        // Check if Web Share API is supported (mobile devices)
+                        if (typeof navigator !== "undefined" && navigator.share) {
+                          try {
+                            await navigator.share({
+                              title: `${group.name} - Group Share`,
+                              text: `Check out this group: ${group.name}`,
+                              url: shareUrl,
+                            });
+                          } catch (err) {
+                            // User cancelled or error occurred
+                            if ((err as Error).name !== "AbortError") {
+                              console.error("Error sharing:", err);
+                              // Fallback to copy if share fails
+                              if (shareUrlRef.current) {
+                                shareUrlRef.current.select();
+                                shareUrlRef.current.setSelectionRange(0, 99999);
+                                try {
+                                  await navigator.clipboard.writeText(shareUrl);
+                                } catch {
+                                  document.execCommand("copy");
                                 }
                               }
                             }
-                          } else {
-                            // Fallback for browsers that don't support Web Share API (desktop)
-                            if (shareUrlRef.current) {
-                              shareUrlRef.current.select();
-                              shareUrlRef.current.setSelectionRange(0, 99999);
-                              try {
-                                if (typeof navigator !== "undefined" && navigator.clipboard) {
-                                  await navigator.clipboard.writeText(appShareUrl);
-                                  const button = e.currentTarget;
-                                  const originalText = button.textContent;
-                                  if (button.textContent) {
-                                    button.textContent = "copied!";
-                                    setTimeout(() => {
-                                      button.textContent = originalText;
-                                    }, 2000);
-                                  }
-                                } else {
-                                  throw new Error("Clipboard not available");
-                                }
-                              } catch {
-                                // Fallback for older browsers
-                                if (shareUrlRef.current) {
-                                  shareUrlRef.current.select();
-                                  shareUrlRef.current.setSelectionRange(0, 99999);
-                                  document.execCommand("copy");
-                                }
+                          }
+                        } else {
+                          // Fallback for browsers that don't support Web Share API (desktop)
+                          if (shareUrlRef.current) {
+                            shareUrlRef.current.select();
+                            shareUrlRef.current.setSelectionRange(0, 99999);
+                            try {
+                              if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                await navigator.clipboard.writeText(shareUrl);
                                 const button = e.currentTarget;
                                 const originalText = button.textContent;
                                 if (button.textContent) {
@@ -646,21 +638,29 @@ export default function GroupPage() {
                                     button.textContent = originalText;
                                   }, 2000);
                                 }
+                              } else {
+                                throw new Error("Clipboard not available");
+                              }
+                            } catch {
+                              // Fallback for older browsers
+                              document.execCommand("copy");
+                              const button = e.currentTarget;
+                              const originalText = button.textContent;
+                              if (button.textContent) {
+                                button.textContent = "copied!";
+                                setTimeout(() => {
+                                  button.textContent = originalText;
+                                }, 2000);
                               }
                             }
                           }
-                        } catch (error) {
-                          console.error("Error generating share URL:", error);
-                          alert("Failed to generate share link. Please try again.");
-                        } finally {
-                          setIsGeneratingShare(false);
                         }
                       }}
-                      disabled={isGeneratingShare}
+                      disabled={!shareUrl}
                       className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
                     >
                       <Send className="w-4 h-4" />
-                      {isGeneratingShare ? "generating..." : "share"}
+                      share
                     </button>
                   </div>
                 </div>

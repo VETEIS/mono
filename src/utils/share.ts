@@ -2,43 +2,38 @@ import LZString from "lz-string";
 import type { Group } from "@/types";
 
 /**
- * Upload group data to GitHub Gist and return the shareable URL
+ * Upload group data to GitHub Gist via API route and return the shareable URL
  */
 export async function createGroupGist(group: Group): Promise<string | null> {
   try {
-    const jsonString = JSON.stringify(group);
-    const compressed = LZString.compressToBase64(jsonString);
-    
-    // Create a public gist with the compressed group data
-    const response = await fetch("https://api.github.com/gists", {
+    // Call our Next.js API route which will proxy the request to GitHub
+    const response = await fetch("/api/gists/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/vnd.github.v3+json",
       },
-      body: JSON.stringify({
-        description: `MONO Group Share: ${group.name}`,
-        public: true,
-        files: {
-          "group.json": {
-            content: compressed,
-          },
-        },
-      }),
+      body: JSON.stringify(group),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("GitHub Gist API error:", response.status, errorData);
-      return null;
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+      } catch {
+        const text = await response.text().catch(() => "");
+        errorData = { error: text || response.statusText };
+      }
+
+      const errorMessage = errorData.error || "Failed to create gist";
+      throw new Error(errorMessage);
     }
 
-    const gistData = await response.json();
-    // Return the HTML URL which is more user-friendly
-    return gistData.html_url || gistData.url || null;
+    const data = await response.json();
+    return data.url || null;
   } catch (error) {
     console.error("Error creating GitHub Gist:", error);
-    return null;
+    // Re-throw to allow caller to handle the error message
+    throw error;
   }
 }
 
