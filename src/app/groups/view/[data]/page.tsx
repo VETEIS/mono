@@ -129,7 +129,7 @@ export default function GroupViewPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -145,7 +145,7 @@ export default function GroupViewPage() {
 
   if (!group) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -159,7 +159,7 @@ export default function GroupViewPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen">
       <Header
         title={group.name}
         backHref="/groups"
