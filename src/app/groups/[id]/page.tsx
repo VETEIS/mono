@@ -6,10 +6,12 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Download, Upload, Sparkles, MoreVertical } from "lucide-react";
+import { Plus, Download, Upload, Sparkles, MoreVertical, Share2 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
+import { generateShareUrl } from "@/utils/share";
 import { useMemo, useState, useRef } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function GroupPage() {
   const params = useParams();
@@ -23,10 +25,12 @@ export default function GroupPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [settleAmount, setSettleAmount] = useState("");
   const [settleTo, setSettleTo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const shareUrlRef = useRef<HTMLInputElement>(null);
 
   const nets = useMemo(() => {
     if (!group) return [];
@@ -626,6 +630,92 @@ export default function GroupPage() {
             </>
           )}
         </div>
+      </Modal>
+
+      {/* Share Group Modal */}
+      <Modal
+        isOpen={showShare}
+        onClose={() => setShowShare(false)}
+        title="share group"
+      >
+        {group && (
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm mb-4">
+              share this link with your group members. they can view the group details in read-only mode.
+            </p>
+            
+            {typeof window !== "undefined" && (
+              <>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-300">
+                    shareable link
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      ref={shareUrlRef}
+                      type="text"
+                      readOnly
+                      value={generateShareUrl(group)}
+                      className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (shareUrlRef.current) {
+                          shareUrlRef.current.select();
+                          shareUrlRef.current.setSelectionRange(0, 99999); // For mobile
+                          navigator.clipboard.writeText(shareUrlRef.current.value).then(() => {
+                            const button = e.currentTarget;
+                            const originalText = button.textContent;
+                            button.textContent = "copied!";
+                            setTimeout(() => {
+                              button.textContent = originalText;
+                            }, 2000);
+                          }).catch(() => {
+                            // Fallback for older browsers
+                            document.execCommand("copy");
+                            const button = e.currentTarget;
+                            const originalText = button.textContent;
+                            button.textContent = "copied!";
+                            setTimeout(() => {
+                              button.textContent = originalText;
+                            }, 2000);
+                          });
+                        }
+                      }}
+                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap"
+                    >
+                      copy
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-[#3A3A3C]">
+                  <label className="block text-sm font-semibold text-gray-300 text-center">
+                    scan qr code
+                  </label>
+                  <div className="flex justify-center p-4 bg-white rounded-xl">
+                    <QRCodeSVG
+                      value={generateShareUrl(group)}
+                      size={200}
+                      level="M"
+                      includeMargin={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setShowShare(false)}
+                className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+              >
+                close
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

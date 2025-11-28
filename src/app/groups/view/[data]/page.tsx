@@ -1,0 +1,302 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import Header from "@/components/Header";
+import Card from "@/components/Card";
+import { formatCurrency, formatDate } from "@/utils/format";
+import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
+import { decodeGroupFromShare } from "@/utils/share";
+import type { Group } from "@/types";
+import { Eye } from "lucide-react";
+
+export default function GroupViewPage() {
+  const params = useParams();
+  const [group, setGroup] = useState<Group | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const encodedData = params.data as string;
+    if (!encodedData) {
+      setError("invalid share link");
+      return;
+    }
+
+    try {
+      const decodedGroup = decodeGroupFromShare(encodedData);
+      if (!decodedGroup) {
+        setError("invalid or corrupted share link");
+        return;
+      }
+      setGroup(decodedGroup);
+    } catch (err) {
+      setError("failed to load group data");
+      console.error(err);
+    }
+  }, [params.data]);
+
+  const nets = useMemo(() => {
+    if (!group) return [];
+    return computeNets(group);
+  }, [group]);
+
+  const sortedNets = useMemo(() => {
+    return [...nets].sort((a, b) => b.net - a.net);
+  }, [nets]);
+
+  const allActivities = useMemo(() => {
+    if (!group) return [];
+    const activities: Array<{
+      id: string;
+      type: "expense" | "settlement";
+      date: string;
+      data: any;
+    }> = [];
+
+    group.expenses.forEach((exp) => {
+      activities.push({ id: exp.id, type: "expense", date: exp.date, data: exp });
+    });
+
+    group.settlements.forEach((sett) => {
+      activities.push({ id: sett.id, type: "settlement", date: sett.date, data: sett });
+    });
+
+    return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [group]);
+
+  const suggestions = useMemo(() => {
+    if (!group) return [];
+    return suggestSettlements(group);
+  }, [group]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen pb-20">
+        <Header title="group view" backHref="/groups" />
+        <main className="p-5">
+          <Card>
+            <div className="text-gray-400 text-center py-10">
+              <p className="text-lg mb-2">{error}</p>
+              <p className="text-sm">please request a new share link from the group owner.</p>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="min-h-screen pb-20">
+        <Header title="group view" backHref="/groups" />
+        <main className="p-5">
+          <Card>
+            <div className="text-gray-400 text-center py-10">
+              <p className="text-sm">loading...</p>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen pb-20">
+      <Header
+        title={group.name}
+        backHref="/groups"
+        action={
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg">
+            <Eye className="w-4 h-4 text-[#FCD34D]" />
+            <span className="text-xs font-semibold text-[#FCD34D]">view only</span>
+          </div>
+        }
+      />
+
+      <main className="p-5 space-y-6">
+        {/* View Only Banner */}
+        <Card className="bg-[#FCD34D]/10 border-[#FCD34D]/30">
+          <div className="flex items-center gap-3">
+            <Eye className="w-5 h-5 text-[#FCD34D]" />
+            <div>
+              <p className="text-sm font-semibold text-[#FCD34D]">read-only mode</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                this is a shared link. you cannot make changes to this group.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Members & Balances */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-50 mb-4">members</h2>
+          <Card>
+            {sortedNets.length === 0 ? (
+              <p className="text-gray-400 text-center py-4">no members</p>
+            ) : (
+              <div className="space-y-3">
+                {sortedNets.map((net) => {
+                  const member = group.members.find((m) => m.id === net.memberId);
+                  if (!member) return null;
+
+                  // Find who owes this member (if net > 0) or who this member owes (if net < 0)
+                  let labelText = "settled";
+                  if (net.net > 0.01) {
+                    const debtors = sortedNets
+                      .filter((n) => n.net < -0.01 && n.memberId !== net.memberId)
+                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
+                      .filter(Boolean) as string[];
+                    if (debtors.length > 0) {
+                      labelText = `owed by ${debtors.join(", ")}`;
+                    } else {
+                      labelText = "owed";
+                    }
+                  } else if (net.net < -0.01) {
+                    const creditors = sortedNets
+                      .filter((n) => n.net > 0.01 && n.memberId !== net.memberId)
+                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
+                      .filter(Boolean) as string[];
+                    if (creditors.length > 0) {
+                      labelText = `owes ${creditors.join(", ")}`;
+                    } else {
+                      labelText = "owes";
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                          style={{ backgroundColor: member.avatarColor || "#FCD34D" }}
+                        >
+                          {member.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-gray-50 font-medium">{member.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <p
+                          className={`font-bold ${
+                            Math.abs(net.net) < 0.01
+                              ? "text-gray-400"
+                              : net.net > 0
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {net.net > 0 ? "+" : ""}
+                          {formatCurrency(net.net)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {labelText}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Settlement Suggestions (Read-only) */}
+        {suggestions.length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-50 mb-4">suggested settlements</h2>
+            <Card>
+              <p className="text-gray-400 text-sm mb-4">
+                minimal transfers needed to settle all balances:
+              </p>
+              <div className="space-y-3">
+                {suggestions.map((suggestion, index) => {
+                  const fromMember = group.members.find((m) => m.id === suggestion.from);
+                  const toMember = group.members.find((m) => m.id === suggestion.to);
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                    >
+                      <div>
+                        <p className="text-gray-50 font-medium">
+                          {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
+                        </p>
+                      </div>
+                      <p className="text-green-400 font-bold">
+                        {formatCurrency(suggestion.amount)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Activities */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-50 mb-4">activity</h2>
+          <Card>
+            {allActivities.length === 0 ? (
+              <p className="text-gray-400 text-center py-4">no activity yet</p>
+            ) : (
+              <div className="space-y-3">
+                {allActivities.slice(0, 10).map((activity) => {
+                  if (activity.type === "expense") {
+                    const expense = activity.data;
+                    const paidByNames = Object.keys(expense.paidBy)
+                      .map((id) => group.members.find((m) => m.id === id)?.name || "unknown")
+                      .join(", ");
+                    
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      >
+                        <div className="flex-1">
+                          <p className="text-gray-50 font-medium">
+                            {expense.description || "expense"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            paid by {paidByNames} • {formatDate(expense.date)}
+                          </p>
+                        </div>
+                        <p className="text-gray-100 font-bold">{formatCurrency(expense.amount)}</p>
+                      </div>
+                    );
+                  } else {
+                    const settlement = activity.data;
+                    const fromMember = group.members.find((m) => m.id === settlement.from);
+                    const toMember = group.members.find((m) => m.id === settlement.to);
+                    
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                      >
+                        <div className="flex-1">
+                          <p className="text-gray-50 font-medium">
+                            {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            payment • {formatDate(settlement.date)}
+                          </p>
+                        </div>
+                        <p className="text-green-400 font-bold">
+                          {formatCurrency(settlement.amount)}
+                        </p>
+                      </div>
+                    );
+                  }
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+}
+
