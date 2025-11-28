@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useStore } from "@/store/useStore";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
-import { Download, Upload, Trash2, AlertTriangle } from "lucide-react";
+import { Download, Upload, Trash2, AlertTriangle, Users } from "lucide-react";
 import Modal from "@/components/Modal";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [resetModal, setResetModal] = useState(false);
   const [importModal, setImportModal] = useState(false);
+  const [groupExportModal, setGroupExportModal] = useState(false);
+  const [groupImportModal, setGroupImportModal] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const exportData = useStore((state) => state.exportData);
   const importData = useStore((state) => state.importData);
   const resetAll = useStore((state) => state.resetAll);
+  const groups = useStore((state) => state.groups);
+  const exportGroup = useStore((state) => state.exportGroup);
+  const importGroup = useStore((state) => state.importGroup);
+  const groupImportFileRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
     const data = exportData();
@@ -63,6 +72,40 @@ export default function SettingsPage() {
     alert("all data has been reset.");
   };
 
+  const handleGroupExport = (groupId: string) => {
+    const json = exportGroup(groupId);
+    const group = groups.find((g) => g.id === groupId);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${group?.name.replace(/\s+/g, "_") || "group"}_group.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setGroupExportModal(false);
+    setSelectedGroupId(null);
+  };
+
+  const handleGroupImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = e.target?.result as string;
+        importGroup(json);
+        alert("group imported successfully!");
+        setGroupImportModal(false);
+      } catch (error) {
+        alert("failed to import group. please check the file format.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen pb-20">
       <Header title="settings" />
@@ -91,6 +134,35 @@ export default function SettingsPage() {
                   <Download className="w-5 h-5 text-[#FCD34D]" />
                 </div>
                 <span className="font-semibold text-gray-50">import data</span>
+              </div>
+            </button>
+          </div>
+        </Card>
+
+        {/* Group Export/Import */}
+        <Card>
+          <h3 className="font-bold text-gray-50 mb-4 text-lg">group management</h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => setGroupExportModal(true)}
+              className="w-full flex items-center justify-between px-5 py-4 bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-[#3A3A3C] rounded-2xl transition-all active:scale-95"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#FCD34D]/10 rounded-xl">
+                  <Upload className="w-5 h-5 text-[#FCD34D]" />
+                </div>
+                <span className="font-semibold text-gray-50">export group</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setGroupImportModal(true)}
+              className="w-full flex items-center justify-between px-5 py-4 bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-[#3A3A3C] rounded-2xl transition-all active:scale-95"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#FCD34D]/10 rounded-xl">
+                  <Download className="w-5 h-5 text-[#FCD34D]" />
+                </div>
+                <span className="font-semibold text-gray-50">import group</span>
               </div>
             </button>
           </div>
@@ -170,6 +242,105 @@ export default function SettingsPage() {
               className="flex-1 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl transition-all font-bold active:scale-95"
             >
               reset all data
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Group Export Modal */}
+      <Modal
+        isOpen={groupExportModal}
+        onClose={() => {
+          setGroupExportModal(false);
+          setSelectedGroupId(null);
+        }}
+        title="export group"
+      >
+        <div className="space-y-4">
+          {groups.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-400 mb-4">no groups available to export</p>
+              <button
+                onClick={() => {
+                  setGroupExportModal(false);
+                  router.push("/groups/new");
+                }}
+                className="px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95"
+              >
+                create group
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-300 text-sm mb-4">
+                select a group to export as a JSON file for backup or sharing.
+              </p>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {groups.map((group) => (
+                  <button
+                    key={group.id}
+                    onClick={() => handleGroupExport(group.id)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-[#3A3A3C] rounded-xl transition-all active:scale-95 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#FCD34D]/10 rounded-lg">
+                        <Users className="w-4 h-4 text-[#FCD34D]" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-50">{group.name}</p>
+                        <p className="text-xs text-gray-400">
+                          {group.members.length} members • {group.expenses.length} expenses
+                        </p>
+                      </div>
+                    </div>
+                    <Download className="w-4 h-4 text-gray-400" />
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setGroupExportModal(false);
+                  setSelectedGroupId(null);
+                }}
+                className="w-full px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95 mt-4"
+              >
+                cancel
+              </button>
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Group Import Modal */}
+      <Modal
+        isOpen={groupImportModal}
+        onClose={() => setGroupImportModal(false)}
+        title="import group"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-300 text-sm mb-4">
+            import a group from a JSON file. this will add a new group to your groups list.
+          </p>
+            <input
+            ref={groupImportFileRef}
+            type="file"
+            accept=".json"
+            onChange={handleGroupImport}
+            className="hidden"
+          />
+          <div className="flex gap-3">
+            <button
+              onClick={() => setGroupImportModal(false)}
+              className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+            >
+              cancel
+            </button>
+            <button
+              onClick={() => groupImportFileRef.current?.click()}
+              className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              choose file
             </button>
           </div>
         </div>

@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Download, Upload, Sparkles, MoreVertical, Share2 } from "lucide-react";
+import { Plus, Sparkles, Share2 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { generateShareUrl } from "@/utils/share";
@@ -18,18 +18,13 @@ export default function GroupPage() {
   const router = useRouter();
   const groups = useStore((state) => state.groups);
   const addSettlement = useStore((state) => state.addSettlement);
-  const exportGroup = useStore((state) => state.exportGroup);
-  const importGroup = useStore((state) => state.importGroup);
   const group = groups.find((g) => g.id === params.id as string);
   
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showExport, setShowExport] = useState(false);
-  const [showImport, setShowImport] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [settleAmount, setSettleAmount] = useState("");
   const [settleTo, setSettleTo] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const shareUrlRef = useRef<HTMLInputElement>(null);
 
   const nets = useMemo(() => {
@@ -143,37 +138,6 @@ export default function GroupPage() {
     setSettleTo(null);
   };
 
-  const handleExport = () => {
-    if (!group) return;
-    const json = exportGroup(group.id);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${group.name.replace(/\s+/g, "_")}_group.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowExport(false);
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const json = e.target?.result as string;
-        importGroup(json);
-        setShowImport(false);
-      } catch (error) {
-        alert("failed to import group. please check the file format.");
-      }
-    };
-    reader.readAsText(file);
-  };
 
   if (!group) {
     return (
@@ -205,11 +169,11 @@ export default function GroupPage() {
               </button>
             )}
             <button
-              onClick={() => setShowExport(true)}
+              onClick={() => setShowShare(true)}
               className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
-              title="export/import"
+              title="share group"
             >
-              <MoreVertical className="w-5 h-5 text-gray-400" />
+              <Share2 className="w-5 h-5 text-[#FCD34D]" />
             </button>
             <Link
               href={`/groups/${group.id}/expense/new`}
@@ -408,71 +372,6 @@ export default function GroupPage() {
               className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
             >
               apply suggestions
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Export Modal */}
-      <Modal isOpen={showExport} onClose={() => setShowExport(false)} title="export group">
-        <div className="space-y-4">
-          <p className="text-gray-300 text-sm mb-4">
-            export this group as a JSON file for backup or sharing.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowExport(false)}
-              className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
-            >
-              cancel
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              export
-            </button>
-            <button
-              onClick={() => {
-                setShowExport(false);
-                setShowImport(true);
-              }}
-              className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              import
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Import Modal */}
-      <Modal isOpen={showImport} onClose={() => setShowImport(false)} title="import group">
-        <div className="space-y-4">
-          <p className="text-gray-300 text-sm mb-4">
-            import a group from a JSON file. this will add a new group to your groups list.
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowImport(false)}
-              className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
-            >
-              cancel
-            </button>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              choose file
             </button>
           </div>
         </div>
