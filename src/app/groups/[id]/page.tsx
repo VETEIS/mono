@@ -194,17 +194,8 @@ export default function GroupPage() {
                     return;
                   }
                   
-                  // Extract gist ID from the gist URL and create our app URL
-                  let appShareUrl = gistUrl;
-                  const gistIdMatch = gistUrl.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/i) || 
-                                     gistUrl.match(/gist\.github\.com\/([a-f0-9]+)/i);
-                  if (gistIdMatch) {
-                    const gistId = gistIdMatch[1];
-                    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-                    appShareUrl = `${baseUrl}/groups/view/${gistId}`;
-                  }
-                  
-                  setShareUrl(appShareUrl);
+                          // The API route already returns our app URL, so use it directly
+                          setShareUrl(gistUrl);
                   setShowShare(true);
                 } catch (error) {
                   console.error("Error generating share URL:", error);

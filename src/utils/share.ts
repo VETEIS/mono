@@ -2,11 +2,11 @@ import LZString from "lz-string";
 import type { Group } from "@/types";
 
 /**
- * Upload group data to GitHub Gist via API route and return the shareable URL
+ * Upload group data via API route and return the shareable URL
  */
 export async function createGroupGist(group: Group): Promise<string | null> {
   try {
-    // Call our Next.js API route which will proxy the request to GitHub
+    // Call our Next.js API route which will upload the file
     const response = await fetch("/api/gists/create", {
       method: "POST",
       headers: {
@@ -24,71 +24,48 @@ export async function createGroupGist(group: Group): Promise<string | null> {
         errorData = { error: text || response.statusText };
       }
 
-      const errorMessage = errorData.error || "Failed to create gist";
+      const errorMessage = errorData.error || "Failed to create share link";
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
     return data.url || null;
   } catch (error) {
-    console.error("Error creating GitHub Gist:", error);
+    console.error("Error creating share link:", error);
     // Re-throw to allow caller to handle the error message
     throw error;
   }
 }
 
 /**
- * Fetch and decode group data from GitHub Gist
+ * Fetch and decode group data from shared file
  */
-export async function fetchGroupFromGist(gistUrl: string): Promise<Group | null> {
+export async function fetchGroupFromGist(fileId: string): Promise<Group | null> {
   try {
-    // Extract gist ID from URL (handles both gist.github.com and api.github.com URLs)
-    let gistId = "";
-    if (gistUrl.includes("gist.github.com")) {
-      // Extract from https://gist.github.com/username/gistId or https://gist.github.com/gistId
-      const match = gistUrl.match(/gist\.github\.com\/[^\/]+\/([a-f0-9]+)/i) || 
-                    gistUrl.match(/gist\.github\.com\/([a-f0-9]+)/i);
-      if (match) {
-        gistId = match[1];
-      }
-    } else if (gistUrl.includes("api.github.com/gists")) {
-      // Extract from API URL
-      const match = gistUrl.match(/gists\/([a-f0-9]+)/i);
-      if (match) {
-        gistId = match[1];
-      }
-    } else {
-      // Assume it's just the gist ID
-      gistId = gistUrl;
-    }
-
-    if (!gistId) {
-      console.error("Could not extract gist ID from URL:", gistUrl);
-      return null;
-    }
-
-    // Fetch the gist from GitHub API
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    // Fetch the file from 0x0.st using the file ID
+    // The file ID is the last part of the URL (e.g., abc123 from https://0x0.st/abc123.txt)
+    const fileUrl = `https://0x0.st/${fileId}`;
+    
+    const response = await fetch(fileUrl, {
       headers: {
-        "Accept": "application/vnd.github.v3+json",
+        "Accept": "text/plain",
       },
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch gist:", response.status);
+      console.error("Failed to fetch file:", response.status);
       return null;
     }
 
-    const gistData = await response.json();
-    const file = gistData.files?.["group.json"];
+    const compressed = await response.text();
     
-    if (!file || !file.content) {
-      console.error("Gist does not contain group.json file");
+    if (!compressed) {
+      console.error("File is empty");
       return null;
     }
 
     // Decompress and parse the group data
-    const decompressed = LZString.decompressFromBase64(file.content);
+    const decompressed = LZString.decompressFromBase64(compressed.trim());
     if (!decompressed) {
       console.error("Failed to decompress group data");
       return null;
@@ -97,7 +74,7 @@ export async function fetchGroupFromGist(gistUrl: string): Promise<Group | null>
     const group: Group = JSON.parse(decompressed);
     return group;
   } catch (error) {
-    console.error("Error fetching group from Gist:", error);
+    console.error("Error fetching group from file:", error);
     return null;
   }
 }
