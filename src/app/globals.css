@@ -41,17 +41,17 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Fix date input overflow on mobile - iOS Safari requires aggressive constraints */
+/* Date input styling - ensure it matches other inputs and displays properly */
 input[type="date"] {
-  max-width: 100% !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  min-width: 0 !important;
+  box-sizing: border-box;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  margin-left: 0;
-  padding-left: 0;
   cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 

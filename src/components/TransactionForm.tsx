@@ -141,7 +141,7 @@ export default function TransactionForm({
       )}
 
       {!isWallet && type === "receive" && (
-        <div className="min-w-0 w-full max-w-full overflow-hidden box-border">
+        <div className="w-full box-border">
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             when
           </label>
@@ -149,13 +149,13 @@ export default function TransactionForm({
             type="date"
             value={expectedDate}
             onChange={(e) => setExpectedDate(e.target.value)}
-            className="w-full min-w-0 max-w-full box-border px-2 sm:px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            className="w-full box-border px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
           />
         </div>
       )}
 
       {!isWallet && type === "pay" && (
-        <div className="min-w-0 w-full max-w-full overflow-hidden box-border">
+        <div className="w-full box-border">
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             due date
           </label>
@@ -163,7 +163,7 @@ export default function TransactionForm({
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full min-w-0 max-w-full box-border px-2 sm:px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            className="w-full box-border px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
           />
         </div>
       )}
