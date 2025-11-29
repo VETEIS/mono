@@ -41,4 +41,17 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* Fix date input overflow - ensure it respects container width */
+input[type="date"] {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure calendar icon doesn't cause overflow */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: 0;
+  padding-left: 0;
+}
+
 
