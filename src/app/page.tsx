@@ -54,6 +54,22 @@ export default function BudgetPage() {
 
   const remaining = budget - spent;
   const percentageUsed = budget > 0 ? (spent / budget) * 100 : 0;
+  
+  // Get color based on percentage used
+  const getProgressColor = (percentage: number): string => {
+    if (percentage <= 50) return "bg-green-500";
+    if (percentage <= 80) return "bg-orange-500";
+    return "bg-red-500";
+  };
+  
+  const getRemainingColor = (percentage: number): string => {
+    if (percentage <= 50) return "text-green-400";
+    if (percentage <= 80) return "text-orange-400";
+    return "text-red-400";
+  };
+  
+  const progressColor = getProgressColor(percentageUsed);
+  const remainingColor = getRemainingColor(percentageUsed);
 
   const handleSaveBudget = () => {
     const amount = parseFloat(budgetInput) || 0;
@@ -63,11 +79,18 @@ export default function BudgetPage() {
 
   const recentBudgetTransactions = currentMonthTransactions.slice(0, 5);
 
-  // Get current month name
-  const currentMonthName = useMemo(() => {
+  // Get current month and year separately
+  const currentMonth = useMemo(() => {
     const now = new Date();
-    return now.toLocaleString("en-US", { month: "long", year: "numeric" });
+    return now.toLocaleString("en-US", { month: "long" });
   }, []);
+  
+  const currentYear = useMemo(() => {
+    const now = new Date();
+    return now.getFullYear().toString();
+  }, []);
+  
+  const canAddExpense = remaining > 0;
 
   return (
     <div className="min-h-screen pb-20">
@@ -88,7 +111,15 @@ export default function BudgetPage() {
         {isEditingBudget ? (
           <Card className="border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-50">{currentMonthName}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-50">{currentMonth}</h2>
+                <span className="text-lg font-bold text-gray-400">{currentYear}</span>
+                {budget > 0 && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                    budget set
+                  </span>
+                )}
+              </div>
             </div>
             <div className="space-y-3">
               <input
@@ -122,13 +153,28 @@ export default function BudgetPage() {
             </div>
           </Card>
         ) : (
-          <Link href="/budget/new">
+          <Link 
+            href={canAddExpense ? "/budget/new" : "#"} 
+            onClick={(e) => {
+              if (!canAddExpense) {
+                e.preventDefault();
+              }
+            }}
+          >
             <Card
-              hover
-              className="border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E]"
+              hover={canAddExpense}
+              className={`border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E] ${!canAddExpense ? "opacity-60" : ""}`}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-50">{currentMonthName}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-gray-50">{currentMonth}</h2>
+                  <span className="text-lg font-bold text-gray-400">{currentYear}</span>
+                  {budget > 0 && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                      budget set
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -141,9 +187,11 @@ export default function BudgetPage() {
                   <Edit2 className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
-              <p className="text-3xl font-bold text-[#FCD34D] mb-4">
-                {formatCurrency(budget)}
+              
+              <p className={`text-3xl font-bold mb-4 ${remainingColor}`}>
+                {formatCurrency(remaining)}
               </p>
+              
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">spent</span>
@@ -153,27 +201,19 @@ export default function BudgetPage() {
                 </div>
                 <div className="w-full bg-[#1C1C1E] rounded-full h-2 overflow-hidden">
                   <div
-                    className={`h-full transition-all ${
-                      percentageUsed > 100
-                        ? "bg-red-500"
-                        : percentageUsed > 80
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
-                    }`}
+                    className={`h-full transition-all ${progressColor}`}
                     style={{ width: `${Math.min(percentageUsed, 100)}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">remaining</span>
-                  <span
-                    className={`font-semibold ${
-                      remaining >= 0 ? "text-green-400" : "text-red-400"
-                    }`}
-                  >
-                    {formatCurrency(remaining)}
-                  </span>
-                </div>
               </div>
+              
+              {canAddExpense && (
+                <div className="mt-4 pt-3 border-t border-[#3A3A3C]/30">
+                  <p className="text-xs text-gray-500 text-center">
+                    tap to add expense
+                  </p>
+                </div>
+              )}
             </Card>
           </Link>
         )}
