@@ -56,13 +56,14 @@ export default withPWA({
     },
     {
       urlPattern: ({ request }) => request.mode === 'navigate',
-      handler: 'StaleWhileRevalidate',
+      handler: 'NetworkFirst',
       options: {
         cacheName: 'pages',
         expiration: {
           maxEntries: 50,
           maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
+        networkTimeoutSeconds: 2,
         cacheableResponse: {
           statuses: [0, 200],
         },
