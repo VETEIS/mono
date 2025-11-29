@@ -157,7 +157,7 @@ export default function TransactionForm({
       {!isBudget && type === "pay" && (
         <div>
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
-            due date
+            due
           </label>
           <DateInput
             value={dueDate}

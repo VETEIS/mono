@@ -7,6 +7,7 @@ import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
 import { Plus, Users, Trash2, Eye } from "lucide-react";
+import { formatDate } from "@/utils/format";
 
 export default function GroupsPage() {
   const groups = useStore((state) => state.groups);
@@ -60,37 +61,42 @@ export default function GroupsPage() {
             {groups.map((group) => {
               return (
                 <Card key={group.id} hover>
-                  <Link href={`/groups/${group.id}`} className="block">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xl font-bold text-gray-50">
-                          {group.name}
-                        </h3>
-                        {group.readOnly && (
-                          <div className="flex items-center gap-1 px-2 py-0.5 bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg">
-                            <Eye className="w-3 h-3 text-[#FCD34D]" />
-                            <span className="text-xs font-semibold text-[#FCD34D]">read-only</span>
-                          </div>
-                        )}
+                  <div className="flex items-center gap-4">
+                    <Link href={`/groups/${group.id}`} className="flex-1 min-w-0">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-xl font-bold text-gray-50">
+                            {group.name}
+                          </h3>
+                          {group.readOnly && (
+                            <div className="flex items-center gap-1 px-2 py-0.5 bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg">
+                              <Eye className="w-3 h-3 text-[#FCD34D]" />
+                              <span className="text-xs font-semibold text-[#FCD34D]">read-only</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-xs font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                            {group.members.length} members
+                          </span>
+                          <span className="text-xs font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                            {group.expenses.length} expenses
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1.5">
+                          created {formatDate(group.createdAt)}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span>{group.members.length} members</span>
-                        <span>•</span>
-                        <span>{group.expenses.length} expenses</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-3 pt-3 border-t border-[#3A3A3C]">
+                    </Link>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setDeleteModal(group.id);
                       }}
-                      className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                      className="relative z-10 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      delete group
+                      <Trash2 className="w-4 h-4 text-red-400" />
                     </button>
                   </div>
                 </Card>
