@@ -9,7 +9,7 @@ interface CardProps {
 export default function Card({ children, className = "", hover = false }: CardProps) {
   return (
     <div
-      className={`rounded-2xl bg-[#2C2C2E] p-5 shadow-lg border border-[#3A3A3C] transition-all ${
+      className={`rounded-2xl bg-[#2C2C2E] p-5 shadow-lg border border-[#3A3A3C] transition-all min-w-0 max-w-full ${
         hover ? "hover:bg-[#3A3A3C] hover:border-[#4A4A4C] cursor-pointer" : ""
       } ${className}`}
     >
