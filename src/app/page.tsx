@@ -169,11 +169,6 @@ export default function BudgetPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-bold text-gray-50">{currentMonth}</h2>
                   <span className="text-lg font-bold text-gray-400">{currentYear}</span>
-                  {budget > 0 && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                      {formatCurrency(budget)}
-                    </span>
-                  )}
                 </div>
                 <button
                   onClick={(e) => {
@@ -182,9 +177,12 @@ export default function BudgetPage() {
                     setBudgetInput(budget.toString());
                     setIsEditingBudget(true);
                   }}
-                  className="p-2 hover:bg-[#3A3A3C] rounded-xl transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FCD34D]/10 hover:bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg transition-all active:scale-95"
                 >
-                  <Edit2 className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs font-semibold text-[#FCD34D]">
+                    {budget > 0 ? formatCurrency(budget) : "set budget"}
+                  </span>
+                  <Edit2 className="w-3.5 h-3.5 text-[#FCD34D]" />
                 </button>
               </div>
               
@@ -249,7 +247,7 @@ export default function BudgetPage() {
             ) : (
               <div className="space-y-0 overflow-hidden">
                 {recentBudgetTransactions.map((tx, index) => (
-                  <Link key={tx.id} href={`/budget/transactions/${tx.id}`}>
+                  <Link key={tx.id} href={`/budget/transactions/${tx.id}?from=main`}>
                     <div className={`grid grid-cols-[35px_1fr_28px_35px_90px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentBudgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
                       <div className="w-[35px] flex items-center">
                         <span
