@@ -5,10 +5,11 @@ const nextConfig = {};
 
 export default withPWA({
   dest: 'public',
-  register: true,
+  register: false, // We'll register manually
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/],
+  sw: 'sw.js', // Explicit service worker filename
   runtimeCaching: [
     {
       urlPattern: /^https?:\/\/.*\/_next\/static\/.*/i,

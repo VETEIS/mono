@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import PWAMeta from "@/components/PWAMeta";
 import OfflineCache from "@/components/OfflineCache";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
@@ -44,6 +45,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${ubuntu.variable} font-sans bg-[#1C1C1E] text-gray-100 min-h-screen pb-20 overflow-x-hidden`}>
         <PWAMeta />
+        <ServiceWorkerRegistration />
         <OfflineCache />
         <div className="min-w-0 max-w-full overflow-x-hidden box-border">
           {children}
