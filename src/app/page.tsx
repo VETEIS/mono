@@ -93,7 +93,7 @@ export default function BudgetPage() {
   const canAddExpense = remaining > 0;
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header
         title="budget"
         action={
@@ -220,7 +220,7 @@ export default function BudgetPage() {
             </h2>
             <Link
               href="/budget/transactions"
-              className="text-sm text-[#FCD34D] hover:text-[#FBBF24] flex items-center gap-1.5 font-medium transition-colors"
+              className="text-sm text-[#FCD34D] hover:text-[#FBBF24] flex items-center gap-1.5 font-medium transition-colors active:opacity-70"
             >
               view all
               <ArrowRight className="w-4 h-4" />
@@ -234,7 +234,7 @@ export default function BudgetPage() {
                 <p className="mt-2">
                   <Link
                     href="/budget/new"
-                    className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium"
+                    className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium transition-colors active:opacity-70"
                   >
                     add your first expense
                   </Link>
@@ -244,7 +244,7 @@ export default function BudgetPage() {
               <div className="space-y-0 overflow-hidden">
                 {recentBudgetTransactions.map((tx, index) => (
                   <Link key={tx.id} href={`/budget/transactions/${tx.id}?from=main`}>
-                    <div className={`grid grid-cols-[35px_1fr_28px_35px_90px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentBudgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
+                    <div className={`grid grid-cols-[35px_1fr_28px_35px_90px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors active:bg-[#2C2C2E]/70 active:opacity-80 ${index < recentBudgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
                       <div className="w-[35px] flex items-center">
                         <span
                           className={`text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-lg whitespace-nowrap inline-block ${

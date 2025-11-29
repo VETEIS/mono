@@ -39,7 +39,7 @@ export default function EditBudgetTransactionPage() {
 
   if (!transaction) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="edit transaction" backHref={backHref} />
         <main className="p-5">
           <Card>
@@ -51,7 +51,7 @@ export default function EditBudgetTransactionPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="edit transaction" backHref={backHref} />
       <main className="p-5">
         <Card>

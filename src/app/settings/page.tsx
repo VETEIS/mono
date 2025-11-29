@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="settings" />
       <main className="p-5 space-y-5">
         {/* Universal Import/Export */}

@@ -62,7 +62,7 @@ function TransactionsContent() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="transactions" backHref="/debts" />
 
       <main className="p-5 space-y-5">
@@ -96,7 +96,7 @@ function TransactionsContent() {
             <div className="text-gray-400 text-center py-10">
               <p>no transactions found.</p>
               <p className="mt-2">
-                <Link href="/transactions/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium">
+                <Link href="/transactions/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium transition-colors active:opacity-70">
                   add your first transaction
                 </Link>
               </p>
@@ -107,7 +107,7 @@ function TransactionsContent() {
                 <Link
                   key={tx.id}
                   href={`/transactions/${tx.id}`}
-                  className={`relative grid grid-cols-[55px_1fr_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < sortedTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
+                  className={`relative grid grid-cols-[55px_1fr_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors active:bg-[#2C2C2E]/70 active:opacity-80 ${index < sortedTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
                 >
                   <div className="min-w-0 flex items-center">
                     <span
@@ -196,7 +196,7 @@ function TransactionsContent() {
 export default function TransactionsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="transactions" backHref="/debts" />
         <main className="p-5">
           <Card>

@@ -32,7 +32,7 @@ export default function EditNotePage() {
 
   if (!note) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="edit note" backHref="/notes" />
         <main className="p-5">
           <Card>
@@ -44,7 +44,7 @@ export default function EditNotePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="edit note" backHref="/notes" />
       <main className="p-5">
         <Card>

@@ -35,7 +35,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-t border-[#3A3A3C] z-20 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-t border-[#3A3A3C] z-20 safe-area-bottom pointer-events-auto">
       <div className="flex items-center px-2 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;

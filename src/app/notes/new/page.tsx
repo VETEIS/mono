@@ -16,7 +16,7 @@ export default function NewNotePage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="new note" backHref="/notes" />
       <main className="p-5">
         <Card>

@@ -158,7 +158,7 @@ export default function GroupViewPage() {
   // Show loading state only if we don't have a group and there's no error yet
   if (!group && !error) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -174,7 +174,7 @@ export default function GroupViewPage() {
   // Show error only if we have an error and no group
   if (error && !group) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="group view" backHref="/groups" />
         <main className="p-5">
           <Card>
@@ -194,7 +194,7 @@ export default function GroupViewPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header
         title={group.name}
         backHref="/groups"

@@ -66,7 +66,7 @@ export default function NewBudgetTransactionPage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="add expense" backHref="/" />
       <main className="p-5">
         <Card>

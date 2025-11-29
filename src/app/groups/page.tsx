@@ -26,7 +26,7 @@ export default function GroupsPage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header
         title="groups"
         action={

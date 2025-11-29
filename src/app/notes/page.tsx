@@ -26,7 +26,7 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header
         title="notes"
         backHref="/debts"
@@ -46,7 +46,7 @@ export default function NotesPage() {
             <div className="text-gray-400 text-center py-10">
               <p>no notes yet.</p>
               <p className="mt-2">
-                <Link href="/notes/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium">
+                <Link href="/notes/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium transition-colors active:opacity-70">
                   add your first note
                 </Link>
               </p>

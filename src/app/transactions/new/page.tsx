@@ -23,7 +23,7 @@ function NewTransactionContent() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="new transaction" backHref="/debts" />
       <main className="p-5">
         <Card>
@@ -37,7 +37,7 @@ function NewTransactionContent() {
 export default function NewTransactionPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="new transaction" backHref="/debts" />
         <main className="p-5">
           <Card>

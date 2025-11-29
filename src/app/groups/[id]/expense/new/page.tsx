@@ -123,7 +123,7 @@ export default function NewExpensePage() {
 
   if (!group) {
     return (
-      <div className="min-h-screen pb-20">
+      <div className="min-h-screen pt-16 pb-20">
         <Header title="add expense" backHref={`/groups/${params.id}`} />
         <main className="p-5">
           <Card>
@@ -155,7 +155,7 @@ export default function NewExpensePage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="add expense" backHref={`/groups/${params.id}`} />
       <main className="p-5 space-y-6">
         <Card>

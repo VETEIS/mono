@@ -36,7 +36,7 @@ export default function DebtsPage() {
   }, [transactions]);
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header
         title="debts"
         showNotesButton={true}
@@ -104,7 +104,7 @@ export default function DebtsPage() {
             </h2>
             <Link
               href="/transactions"
-              className="text-sm text-[#FCD34D] hover:text-[#FBBF24] flex items-center gap-1.5 font-medium transition-colors"
+              className="text-sm text-[#FCD34D] hover:text-[#FBBF24] flex items-center gap-1.5 font-medium transition-colors active:opacity-70"
             >
               view all
               <ArrowRight className="w-4 h-4" />
@@ -116,7 +116,7 @@ export default function DebtsPage() {
               <div className="text-gray-400 text-center py-8">
                 <p>no transactions yet.</p>
                 <p className="mt-2">
-                  <Link href="/transactions/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium">
+                  <Link href="/transactions/new" className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium transition-colors active:opacity-70">
                     add your first transaction
                   </Link>
                 </p>
@@ -124,8 +124,8 @@ export default function DebtsPage() {
             ) : (
               <div className="space-y-0 overflow-hidden">
                 {recentTransactions.map((tx, index) => (
-                  <Link key={tx.id} href={`/transactions/${tx.id}`}>
-                    <div className={`grid grid-cols-[55px_1fr_45px_90px] items-center gap-2 sm:gap-3 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
+                  <Link key={tx.id} href={`/transactions/${tx.id}?from=debts`}>
+                    <div className={`grid grid-cols-[55px_1fr_45px_90px] items-center gap-2 sm:gap-3 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors active:bg-[#2C2C2E]/70 active:opacity-80 ${index < recentTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
                       <div className="min-w-0 flex items-center">
                         <span
                           className={`text-[10px] font-semibold px-1 py-0.5 rounded-lg whitespace-nowrap inline-block ${

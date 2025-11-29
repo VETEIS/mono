@@ -84,7 +84,7 @@ export default function NewGroupPage() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pt-16 pb-20">
       <Header title="new group" backHref="/groups" />
       <main className="p-5">
         <Card>

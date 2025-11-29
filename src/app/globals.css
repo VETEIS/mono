@@ -55,4 +55,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding-left: 0;
 }
 
+/* Global active feedback for interactive elements */
+@layer utilities {
+  .tap-active {
+    @apply active:scale-[0.98] active:opacity-80 transition-all;
+  }
+  
+  .tap-active-link {
+    @apply active:opacity-70 transition-opacity;
+  }
+}
+
 
