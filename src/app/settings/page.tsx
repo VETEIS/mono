@@ -71,7 +71,7 @@ export default function SettingsPage() {
       <main className="p-5 space-y-5">
         {/* Universal Import/Export */}
         <Card>
-          <h3 className="font-bold text-gray-50 mb-4 text-lg">import / export</h3>
+          <h3 className="font-bold text-gray-50 mb-4 text-lg">data management</h3>
           <div className="flex gap-3">
             <button
               onClick={handleExport}
