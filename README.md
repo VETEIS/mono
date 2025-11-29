@@ -4,13 +4,13 @@ A lightweight, offline-first personal finance tracker built with Next.js 15, Typ
 
 ## Features
 
-### 💰 Wallet (Monthly Budget Tracking)
+### 💰 Budget (Monthly Budget Tracking)
 - **Monthly Budget Management**: Set and edit your monthly budget with visual progress tracking
 - **Real-time Budget Calculation**: Automatically tracks income (in) and expenses (out) against your budget
 - **Visual Progress Bar**: Color-coded progress indicator (green/yellow/red) showing budget usage
 - **Quick Expense Entry**: Click the budget card to quickly add expenses
-- **Recent Expenses**: View the 5 most recent wallet transactions
-- **Auto-archiving**: Previous month's wallet data is automatically archived on the first day of each month
+- **Recent Expenses**: View the 5 most recent budget transactions
+- **Auto-archiving**: Previous month's budget data is automatically archived on the first day of each month
 - **Monthly Archives**: Access archived months with detailed Excel export functionality
 
 ### 💳 Debts (Financial Overview)
@@ -25,7 +25,7 @@ A lightweight, offline-first personal finance tracker built with Next.js 15, Typ
 - **Transaction Types**: Categorize as "receive" (income) or "pay" (expenses)
 - **Filtering**: Filter transactions by type (receive/pay) via URL parameters
 - **Transaction Details**: Label, amount, category, date, and optional notes
-- **Wallet Transactions**: Separate wallet-specific transactions for budget tracking
+- **Budget Transactions**: Separate budget-specific transactions for budget tracking
 
 ### 📄 Notes
 - **Simple Note Taking**: Create, edit, and delete notes
@@ -38,7 +38,7 @@ A lightweight, offline-first personal finance tracker built with Next.js 15, Typ
 - **Data Reset**: Permanently delete all transactions and notes (with confirmation)
 
 ### 📊 Monthly Archives
-- **Automatic Archiving**: Previous month's wallet transactions are archived on the 1st of each month
+- **Automatic Archiving**: Previous month's budget transactions are archived on the 1st of each month
 - **Detailed Reports**: Each archive includes:
   - All transactions from that month
   - Budget amount
@@ -51,17 +51,17 @@ A lightweight, offline-first personal finance tracker built with Next.js 15, Typ
 ## Pages & Navigation
 
 ### Main Navigation (Bottom Bar)
-- **Wallet** (`/`): Monthly budget tracking and expense management
+- **Budget** (`/`): Monthly budget tracking and expense management
 - **Debts** (`/debts`): Financial overview with totals and balance
 - **Transactions** (`/transactions`): Complete transaction list with filtering
 - **Settings** (`/settings`): Data management and app settings
 
-### Wallet Section
-- **Wallet Home** (`/`): Budget card, recent expenses, archive button
-- **Add Expense** (`/wallet/new`): Quick expense entry form
-- **Wallet Transactions** (`/wallet/transactions`): Current month's wallet transactions
-- **Edit Transaction** (`/wallet/transactions/[id]`): Edit wallet transaction
-- **Archived Months** (`/wallet/archives`): View and download monthly archives
+### Budget Section
+- **Budget Home** (`/`): Budget card, recent expenses, archive button
+- **Add Expense** (`/budget/new`): Quick expense entry form
+- **Budget Transactions** (`/budget/transactions`): Current month's budget transactions
+- **Edit Transaction** (`/budget/transactions/[id]`): Edit budget transaction
+- **Archived Months** (`/budget/archives`): View and download monthly archives
 
 ### Transactions Section
 - **All Transactions** (`/transactions`): Complete transaction list with filters
@@ -90,7 +90,7 @@ A lightweight, offline-first personal finance tracker built with Next.js 15, Typ
 - **Storage Key**: `money_manager_data_v1`
 
 ### Data Structure
-- **Transactions**: Type (receive/pay), label, amount, category, date, notes, wallet flag
+- **Transactions**: Type (receive/pay), label, amount, category, date, notes, budget flag
 - **Notes**: Text content and creation date
 - **Budget**: Monthly budget amount
 - **Monthly Archives**: Complete month snapshots with transactions and statistics
@@ -155,20 +155,20 @@ For detailed instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 ## Usage Guide
 
 ### Setting Up Your Budget
-1. Navigate to the **Wallet** page (home)
+1. Navigate to the **Budget** page (home)
 2. Click the edit icon on the budget card
 3. Enter your monthly budget amount
 4. Click "save"
 
 ### Adding Expenses
-1. Click the budget card on the Wallet page, OR
-2. Navigate to Wallet Transactions and click the "+" button
+1. Click the budget card on the Budget page, OR
+2. Navigate to Budget Transactions and click the "+" button
 3. Select type: "in" (income) or "out" (expense) - defaults to "out"
 4. Enter label, amount, and category (food/things)
 5. Submit - date is automatically set to current date/time
 
 ### Viewing Archives
-1. Click the Archive button (📦) in the Wallet page header
+1. Click the Archive button (📦) in the Budget page header
 2. Browse archived months
 3. Click the download icon to export as Excel/CSV
 
@@ -188,14 +188,14 @@ For detailed instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 ```
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Wallet (home page)
+│   ├── page.tsx           # Budget (home page)
 │   ├── debts/             # Debts overview
 │   ├── transactions/      # All transactions
 │   ├── notes/             # Notes management
 │   ├── settings/          # App settings
-│   └── wallet/            # Wallet-specific pages
+│   └── budget/            # Budget-specific pages
 │       ├── new/           # Add expense
-│       ├── transactions/  # Wallet transactions
+│       ├── transactions/  # Budget transactions
 │       └── archives/      # Monthly archives
 ├── components/            # Reusable components
 │   ├── Card.tsx

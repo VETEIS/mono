@@ -12,12 +12,12 @@ export default function DebtsPage() {
   const transactions = useStore((state) => state.transactions);
 
   const { totalReceive, totalPay, balance } = useMemo(() => {
-    // Exclude wallet transactions - debts page is separate from wallet
-    const nonWalletTransactions = transactions.filter((tx) => !tx.wallet);
-    const receive = nonWalletTransactions
+    // Exclude budget transactions - debts page is separate from budget
+    const nonBudgetTransactions = transactions.filter((tx) => !tx.budget);
+    const receive = nonBudgetTransactions
       .filter((tx) => tx.type === "receive")
       .reduce((sum, tx) => sum + tx.amount, 0);
-    const pay = nonWalletTransactions
+    const pay = nonBudgetTransactions
       .filter((tx) => tx.type === "pay")
       .reduce((sum, tx) => sum + tx.amount, 0);
     return {
@@ -28,9 +28,9 @@ export default function DebtsPage() {
   }, [transactions]);
 
   const recentTransactions = useMemo(() => {
-    // Exclude wallet transactions - debts page is separate from wallet
+    // Exclude budget transactions - debts page is separate from budget
     return [...transactions]
-      .filter((tx) => !tx.wallet)
+      .filter((tx) => !tx.budget)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
   }, [transactions]);

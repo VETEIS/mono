@@ -44,10 +44,10 @@ function TransactionsContent() {
   };
 
   const filteredTransactions = useMemo(() => {
-    // Exclude wallet transactions - transactions page is separate from wallet
-    const nonWalletTransactions = transactions.filter((tx) => !tx.wallet);
-    if (filter === "all") return nonWalletTransactions;
-    return nonWalletTransactions.filter((tx) => tx.type === filter);
+    // Exclude budget transactions - transactions page is separate from budget
+    const nonBudgetTransactions = transactions.filter((tx) => !tx.budget);
+    if (filter === "all") return nonBudgetTransactions;
+    return nonBudgetTransactions.filter((tx) => tx.type === filter);
   }, [transactions, filter]);
 
   const sortedTransactions = useMemo(() => {

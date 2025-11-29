@@ -6,14 +6,14 @@ import Header from "@/components/Header";
 import TransactionForm from "@/components/TransactionForm";
 import Card from "@/components/Card";
 
-export default function NewWalletTransactionPage() {
+export default function NewBudgetTransactionPage() {
   const router = useRouter();
   const addTransaction = useStore((state) => state.addTransaction);
 
   const handleSubmit = (data: Parameters<typeof addTransaction>[0]) => {
     addTransaction({
       ...data,
-      wallet: true, // Mark as wallet transaction
+      budget: true, // Mark as budget transaction
     });
     router.push("/");
   };
@@ -23,7 +23,7 @@ export default function NewWalletTransactionPage() {
       <Header title="add expense" backHref="/" />
       <main className="p-5">
         <Card>
-          <TransactionForm onSubmit={handleSubmit} isWallet={true} />
+          <TransactionForm onSubmit={handleSubmit} isBudget={true} />
         </Card>
       </main>
     </div>

@@ -11,7 +11,7 @@ interface TransactionFormProps {
   initialType?: TransactionType; // Override type for new transactions
   onSubmit: (data: Omit<Transaction, "id">) => void;
   onCancel?: () => void;
-  isWallet?: boolean; // If true, use "in"/"out" and auto-set date
+  isBudget?: boolean; // If true, use "in"/"out" and auto-set date
 }
 
 export default function TransactionForm({
@@ -19,10 +19,10 @@ export default function TransactionForm({
   initialType,
   onSubmit,
   onCancel,
-  isWallet = false,
+  isBudget = false,
 }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>(
-    initialType || initialData?.type || (isWallet ? "pay" : "receive")
+    initialType || initialData?.type || (isBudget ? "pay" : "receive")
   );
   const [label, setLabel] = useState(initialData?.label || "");
   const [amount, setAmount] = useState(
@@ -62,7 +62,7 @@ export default function TransactionForm({
         <label className="block text-sm font-semibold text-gray-300 mb-2.5">
           type
         </label>
-        {initialType && !isWallet ? (
+        {initialType && !isBudget ? (
           <div className="w-full pl-4 pr-4 py-3.5 bg-[#1C1C1E]/50 border border-[#3A3A3C]/50 rounded-2xl text-gray-500 cursor-not-allowed">
             {type === "receive" ? "receive" : "pay"}
           </div>
@@ -73,7 +73,7 @@ export default function TransactionForm({
               onChange={(e) => setType(e.target.value as TransactionType)}
               className="w-full pl-4 pr-12 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all appearance-none"
             >
-              {isWallet ? (
+              {isBudget ? (
                 <>
                   <option value="receive" className="bg-[#2C2C2E]">in</option>
                   <option value="pay" className="bg-[#2C2C2E]">out</option>
@@ -121,7 +121,7 @@ export default function TransactionForm({
         />
       </div>
 
-      {isWallet && (
+      {isBudget && (
         <div>
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             category
@@ -141,7 +141,7 @@ export default function TransactionForm({
         </div>
       )}
 
-      {!isWallet && type === "receive" && (
+      {!isBudget && type === "receive" && (
         <div>
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             when
@@ -154,7 +154,7 @@ export default function TransactionForm({
         </div>
       )}
 
-      {!isWallet && type === "pay" && (
+      {!isBudget && type === "pay" && (
         <div>
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             due date

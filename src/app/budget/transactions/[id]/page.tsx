@@ -8,7 +8,7 @@ import Card from "@/components/Card";
 import { useEffect, useState } from "react";
 import type { Transaction } from "@/types";
 
-export default function EditWalletTransactionPage() {
+export default function EditBudgetTransactionPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -17,26 +17,26 @@ export default function EditWalletTransactionPage() {
   const [transaction, setTransaction] = useState<Transaction | null>(null);
 
   useEffect(() => {
-    const tx = transactions.find((t) => t.id === id && t.wallet);
+    const tx = transactions.find((t) => t.id === id && t.budget);
     if (tx) {
       setTransaction(tx);
     } else {
-      router.push("/wallet/transactions");
+      router.push("/budget/transactions");
     }
   }, [id, transactions, router]);
 
   const handleSubmit = (data: Omit<Transaction, "id">) => {
     updateTransaction(id, {
       ...data,
-      wallet: true, // Ensure it stays a wallet transaction
+      budget: true, // Ensure it stays a budget transaction
     });
-    router.push("/wallet/transactions");
+    router.push("/budget/transactions");
   };
 
   if (!transaction) {
     return (
       <div className="min-h-screen pb-20">
-        <Header title="edit transaction" backHref="/wallet/transactions" />
+        <Header title="edit transaction" backHref="/budget/transactions" />
         <main className="p-5">
           <Card>
             <p className="text-gray-400 text-center py-8">loading...</p>
@@ -48,10 +48,10 @@ export default function EditWalletTransactionPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header title="edit transaction" backHref="/wallet/transactions" />
+      <Header title="edit transaction" backHref="/budget/transactions" />
       <main className="p-5">
         <Card>
-          <TransactionForm initialData={transaction} onSubmit={handleSubmit} isWallet={true} />
+          <TransactionForm initialData={transaction} onSubmit={handleSubmit} isBudget={true} />
         </Card>
       </main>
     </div>

@@ -44,7 +44,7 @@ export function exportMonthlyArchiveToExcel(archive: MonthlyArchive) {
 
   // Combine all data
   const csvData = [
-    [`MONTHLY WALLET REPORT - ${monthName.toUpperCase()}`],
+    [`MONTHLY BUDGET REPORT - ${monthName.toUpperCase()}`],
     [],
     headers,
     ...rows,
@@ -78,7 +78,7 @@ export function exportMonthlyArchiveToExcel(archive: MonthlyArchive) {
   link.setAttribute("href", url);
   link.setAttribute(
     "download",
-    `wallet-${archive.year}-${String(archive.month + 1).padStart(2, "0")}.csv`
+    `budget-${archive.year}-${String(archive.month + 1).padStart(2, "0")}.csv`
   );
   link.style.visibility = "hidden";
   document.body.appendChild(link);

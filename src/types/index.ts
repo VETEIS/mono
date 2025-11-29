@@ -10,7 +10,7 @@ export interface Transaction {
   expectedDate?: string; // ISO string - when they expect to receive money (for receive type)
   dueDate?: string; // ISO string - when they should pay the debt (for pay type)
   notes?: string;
-  wallet?: boolean; // true if this is a wallet transaction
+  budget?: boolean; // true if this is a budget transaction
 }
 
 export interface Note {

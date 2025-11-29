@@ -414,33 +414,8 @@ export default function GroupPage() {
         isOpen={showSuggestions}
         onClose={() => setShowSuggestions(false)}
         title="suggested settlements"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-300 text-sm mb-4">
-            these are the minimal transfers needed to settle all balances:
-          </p>
-          <div className="space-y-3">
-            {suggestions.map((suggestion, index) => {
-              const fromMember = group?.members.find((m) => m.id === suggestion.from);
-              const toMember = group?.members.find((m) => m.id === suggestion.to);
-              return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
-                >
-                  <div>
-                    <p className="text-gray-50 font-medium">
-                      {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
-                    </p>
-                  </div>
-                  <p className="text-green-400 font-bold">
-                    {formatCurrency(suggestion.amount)}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-3 pt-4">
+        footer={
+          <div className="flex gap-3 px-6 py-4">
             <button
               onClick={() => setShowSuggestions(false)}
               className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
@@ -453,6 +428,39 @@ export default function GroupPage() {
             >
               apply suggestions
             </button>
+          </div>
+        }
+      >
+        <div className="px-6 pt-6 pb-4">
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm">
+              these are the minimal transfers needed to settle all balances:
+            </p>
+            <div className="space-y-3">
+              {suggestions.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">no settlements needed</p>
+              ) : (
+                suggestions.map((suggestion, index) => {
+                  const fromMember = group?.members.find((m) => m.id === suggestion.from);
+                  const toMember = group?.members.find((m) => m.id === suggestion.to);
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                    >
+                      <div>
+                        <p className="text-gray-50 font-medium">
+                          {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
+                        </p>
+                      </div>
+                      <p className="text-green-400 font-bold">
+                        {formatCurrency(suggestion.amount)}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </Modal>

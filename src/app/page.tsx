@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Edit2, ArrowRight, Archive } from "lucide-react";
 import Modal from "@/components/Modal";
 
-export default function WalletPage() {
+export default function BudgetPage() {
   const budget = useStore((state) => state.budget);
   const setBudget = useStore((state) => state.setBudget);
   const transactions = useStore((state) => state.transactions);
@@ -23,7 +23,7 @@ export default function WalletPage() {
     checkAndArchive();
   }, [checkAndArchive]);
 
-  // Get current month's wallet transactions
+  // Get current month's budget transactions
   const currentMonthTransactions = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -31,7 +31,7 @@ export default function WalletPage() {
 
     return transactions
       .filter((tx) => {
-        if (!tx.wallet) return false;
+        if (!tx.budget) return false;
         const txDate = new Date(tx.date);
         return (
           txDate.getMonth() === currentMonth &&
@@ -61,7 +61,7 @@ export default function WalletPage() {
     setIsEditingBudget(false);
   };
 
-  const recentWalletTransactions = currentMonthTransactions.slice(0, 5);
+  const recentBudgetTransactions = currentMonthTransactions.slice(0, 5);
 
   // Get current month name
   const currentMonthName = useMemo(() => {
@@ -72,10 +72,10 @@ export default function WalletPage() {
   return (
     <div className="min-h-screen pb-20">
       <Header
-        title="wallet"
+        title="budget"
         action={
           <Link
-            href="/wallet/archives"
+            href="/budget/archives"
             className="p-2.5 hover:bg-[#2C2C2E] rounded-xl transition-colors active:scale-95"
           >
             <Archive className="w-6 h-6 text-[#FCD34D]" />
@@ -122,7 +122,7 @@ export default function WalletPage() {
             </div>
           </Card>
         ) : (
-          <Link href="/wallet/new">
+          <Link href="/budget/new">
             <Card
               hover
               className="border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E]"
@@ -185,7 +185,7 @@ export default function WalletPage() {
               recent records
             </h2>
             <Link
-              href="/wallet/transactions"
+              href="/budget/transactions"
               className="text-sm text-[#FCD34D] hover:text-[#FBBF24] flex items-center gap-1.5 font-medium transition-colors"
             >
               view all
@@ -194,12 +194,12 @@ export default function WalletPage() {
           </div>
 
           <Card>
-            {recentWalletTransactions.length === 0 ? (
+            {recentBudgetTransactions.length === 0 ? (
               <div className="text-gray-400 text-center py-8">
                 <p>no expenses yet.</p>
                 <p className="mt-2">
                   <Link
-                    href="/wallet/new"
+                    href="/budget/new"
                     className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium"
                   >
                     add your first expense
@@ -208,9 +208,9 @@ export default function WalletPage() {
               </div>
             ) : (
               <div className="space-y-0 overflow-hidden">
-                {recentWalletTransactions.map((tx, index) => (
-                  <Link key={tx.id} href={`/wallet/transactions/${tx.id}`}>
-                    <div className={`grid grid-cols-[35px_1fr_28px_35px_90px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentWalletTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
+                {recentBudgetTransactions.map((tx, index) => (
+                  <Link key={tx.id} href={`/budget/transactions/${tx.id}`}>
+                    <div className={`grid grid-cols-[35px_1fr_28px_35px_90px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < recentBudgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}>
                       <div className="w-[35px] flex items-center">
                         <span
                           className={`text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-lg whitespace-nowrap inline-block ${

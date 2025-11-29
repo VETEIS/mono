@@ -116,9 +116,9 @@ export const useStore = create<StoreState>()(
         );
         if (alreadyArchived) return;
 
-        // Get wallet transactions from previous month
+        // Get budget transactions from previous month
         const previousMonthTransactions = state.transactions.filter((tx) => {
-          if (!tx.wallet) return false;
+          if (!tx.budget) return false;
           const txDate = new Date(tx.date);
           return (
             txDate.getMonth() === month && txDate.getFullYear() === year

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import Modal from "@/components/Modal";
 
-export default function WalletTransactionsPage() {
+export default function BudgetTransactionsPage() {
   const transactions = useStore((state) => state.transactions);
   const deleteTransaction = useStore((state) => state.deleteTransaction);
   const checkAndArchive = useStore((state) => state.checkAndArchive);
@@ -20,15 +20,15 @@ export default function WalletTransactionsPage() {
     checkAndArchive();
   }, [checkAndArchive]);
 
-  // Get current month's wallet transactions
-  const walletTransactions = useMemo(() => {
+  // Get current month's budget transactions
+  const budgetTransactions = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
     return transactions
       .filter((tx) => {
-        if (!tx.wallet) return false;
+        if (!tx.budget) return false;
         const txDate = new Date(tx.date);
         return (
           txDate.getMonth() === currentMonth &&
@@ -49,12 +49,12 @@ export default function WalletTransactionsPage() {
 
       <main className="p-5">
         <Card>
-          {walletTransactions.length === 0 ? (
+          {budgetTransactions.length === 0 ? (
             <div className="text-gray-400 text-center py-10">
               <p>no records found.</p>
               <p className="mt-2">
                 <Link
-                  href="/wallet/new"
+                  href="/budget/new"
                   className="text-[#FCD34D] hover:text-[#FBBF24] hover:underline font-medium"
                 >
                   add your first expense
@@ -63,11 +63,11 @@ export default function WalletTransactionsPage() {
             </div>
           ) : (
             <div className="space-y-0 overflow-hidden">
-              {walletTransactions.map((tx, index) => (
+              {budgetTransactions.map((tx, index) => (
                 <Link
                   key={tx.id}
-                  href={`/wallet/transactions/${tx.id}`}
-                  className={`relative grid grid-cols-[35px_1fr_28px_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < walletTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
+                  href={`/budget/transactions/${tx.id}`}
+                  className={`relative grid grid-cols-[35px_1fr_28px_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < budgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
                 >
                   <div className="w-[35px] flex items-center">
                     <span

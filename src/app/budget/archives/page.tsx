@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import { Download } from "lucide-react";
 import { exportMonthlyArchiveToExcel } from "@/utils/excel";
 
-export default function WalletArchivesPage() {
+export default function BudgetArchivesPage() {
   const monthlyArchives = useStore((state) => state.monthlyArchives);
 
   const handleExportArchive = (archive: typeof monthlyArchives[0]) => {
@@ -32,7 +32,7 @@ export default function WalletArchivesPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header title="archived months" backHref="/wallet/transactions" />
+      <Header title="archived months" backHref="/budget/transactions" />
 
       <main className="p-5 space-y-3">
         {sortedArchives.length === 0 ? (
