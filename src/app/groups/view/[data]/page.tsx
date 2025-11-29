@@ -391,105 +391,107 @@ export default function GroupViewPage() {
         onClose={() => setSelectedMemberId(null)}
         title={selectedMember ? `${selectedMember.name}'s breakdown` : "member breakdown"}
       >
-        <div className="space-y-4">
-          {memberBreakdown.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">no debts or credits</p>
-          ) : (
-            <>
-              <div className="space-y-2">
-                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">receive from</h3>
-                )}
-                {memberBreakdown
-                  .filter((item) => item.type === "owes")
-                  .map((item) => {
-                    const otherMember = group?.members.find((m) => m.id === item.memberId);
-                    if (!otherMember) return null;
-                    
-                    return (
-                      <div
-                        key={item.memberId}
-                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="font-bold text-green-400">
-                          {formatCurrency(item.amount)}
-                        </p>
-                      </div>
-                    );
-                  })}
-                
-                {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                  <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
-                    <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
-                    {memberBreakdown
-                      .filter((item) => item.type === "owed")
-                      .map((item) => {
-                        const otherMember = group?.members.find((m) => m.id === item.memberId);
-                        if (!otherMember) return null;
-                        
-                        return (
-                          <div
-                            key={item.memberId}
-                            className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div>
-                                <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                                <p className="text-xs text-gray-500 flex items-center gap-1">
-                                  {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
-                                </p>
-                              </div>
-                            </div>
-                            <p className="font-bold text-red-400">
-                              {formatCurrency(item.amount)}
-                            </p>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-                
-              </div>
-              
-              {/* Footer totals */}
-              {(memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
-                memberBreakdown.filter((item) => item.type === "owed").length > 0) && (
-                <div className="pt-4 border-t border-[#3A3A3C] space-y-2">
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
+            <div className="space-y-4">
+              {memberBreakdown.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">no debts or credits</p>
+              ) : (
+                <div className="space-y-2">
                   {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-300 font-semibold">total to receive:</p>
-                      <p className="text-green-400 font-bold text-lg">
-                        {formatCurrency(
-                          memberBreakdown
-                            .filter((item) => item.type === "owes")
-                            .reduce((sum, item) => sum + item.amount, 0)
-                        )}
-                      </p>
-                    </div>
+                    <h3 className="text-sm font-semibold text-gray-400 mb-2">receive from</h3>
                   )}
+                  {memberBreakdown
+                    .filter((item) => item.type === "owes")
+                    .map((item) => {
+                      const otherMember = group?.members.find((m) => m.id === item.memberId);
+                      if (!otherMember) return null;
+                      
+                      return (
+                        <div
+                          key={item.memberId}
+                          className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                                {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="font-bold text-green-400">
+                            {formatCurrency(item.amount)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  
                   {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-300 font-semibold">total to pay:</p>
-                      <p className="text-red-400 font-bold text-lg">
-                        {formatCurrency(
-                          memberBreakdown
-                            .filter((item) => item.type === "owed")
-                            .reduce((sum, item) => sum + item.amount, 0)
-                        )}
-                      </p>
+                    <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
+                      <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
+                      {memberBreakdown
+                        .filter((item) => item.type === "owed")
+                        .map((item) => {
+                          const otherMember = group?.members.find((m) => m.id === item.memberId);
+                          if (!otherMember) return null;
+                          
+                          return (
+                            <div
+                              key={item.memberId}
+                              className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div>
+                                  <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="font-bold text-red-400">
+                                {formatCurrency(item.amount)}
+                              </p>
+                            </div>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
               )}
-            </>
+            </div>
+          </div>
+          
+          {/* Sticky Footer totals */}
+          {(memberBreakdown.length > 0 && 
+            (memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
+             memberBreakdown.filter((item) => item.type === "owed").length > 0)) && (
+            <div className="sticky bottom-0 bg-[#2C2C2E] border-t border-[#3A3A3C] px-6 py-4 space-y-2 backdrop-blur-xl z-10">
+              {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-300 font-semibold">total to receive:</p>
+                  <p className="text-green-400 font-bold text-lg">
+                    {formatCurrency(
+                      memberBreakdown
+                        .filter((item) => item.type === "owes")
+                        .reduce((sum, item) => sum + item.amount, 0)
+                    )}
+                  </p>
+                </div>
+              )}
+              {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-300 font-semibold">total to pay:</p>
+                  <p className="text-red-400 font-bold text-lg">
+                    {formatCurrency(
+                      memberBreakdown
+                        .filter((item) => item.type === "owed")
+                        .reduce((sum, item) => sum + item.amount, 0)
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </Modal>

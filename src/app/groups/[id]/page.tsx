@@ -468,48 +468,21 @@ export default function GroupPage() {
         }}
         title={selectedMember ? `${selectedMember.name}'s breakdown` : "member breakdown"}
       >
-        <div className="space-y-4">
-          {memberBreakdown.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">no debts or credits</p>
-          ) : (
-            <>
-              <div className="space-y-2">
-                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">
-                    {group?.readOnly ? "receive from" : "receive from"}
-                  </h3>
-                )}
-                {memberBreakdown
-                  .filter((item) => item.type === "owes")
-                  .map((item) => {
-                    const otherMember = group?.members.find((m) => m.id === item.memberId);
-                    if (!otherMember) return null;
-                    
-                    return (
-                      <div
-                        key={item.memberId}
-                        className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                              {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="font-bold text-green-400">
-                          {formatCurrency(item.amount)}
-                        </p>
-                      </div>
-                    );
-                  })}
-                
-                {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                  <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
-                    <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
+            <div className="space-y-4">
+              {memberBreakdown.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">no debts or credits</p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                      <h3 className="text-sm font-semibold text-gray-400 mb-2">
+                        {group?.readOnly ? "receive from" : "receive from"}
+                      </h3>
+                    )}
                     {memberBreakdown
-                      .filter((item) => item.type === "owed")
+                      .filter((item) => item.type === "owes")
                       .map((item) => {
                         const otherMember = group?.members.find((m) => m.id === item.memberId);
                         if (!otherMember) return null;
@@ -517,112 +490,144 @@ export default function GroupPage() {
                         return (
                           <div
                             key={item.memberId}
-                            className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                            className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                           >
                             <div className="flex items-center gap-3">
                               <div>
                                 <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1">
-                                  {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                  {otherMember.name} <ArrowRight className="w-3 h-3" /> {selectedMember?.name}
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <p className="font-bold text-red-400">
-                                {formatCurrency(item.amount)}
-                              </p>
-                              {!group?.readOnly && (
-                                <button
-                                  onClick={() => {
-                                    setSettleTo(item.memberId);
-                                    setSettleAmount(item.amount.toFixed(2));
-                                  }}
-                                  className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
-                                >
-                                  settle
-                                </button>
-                              )}
-                            </div>
+                            <p className="font-bold text-green-400">
+                              {formatCurrency(item.amount)}
+                            </p>
                           </div>
                         );
                       })}
+                    
+                    {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                      <div className={memberBreakdown.filter((item) => item.type === "owes").length > 0 ? "border-t border-[#3A3A3C] pt-2 mt-2" : ""}>
+                        <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
+                        {memberBreakdown
+                          .filter((item) => item.type === "owed")
+                          .map((item) => {
+                            const otherMember = group?.members.find((m) => m.id === item.memberId);
+                            if (!otherMember) return null;
+                            
+                            return (
+                              <div
+                                key={item.memberId}
+                                className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div>
+                                    <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
+                                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                                      {selectedMember?.name} <ArrowRight className="w-3 h-3" /> {otherMember.name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <p className="font-bold text-red-400">
+                                    {formatCurrency(item.amount)}
+                                  </p>
+                                  {!group?.readOnly && (
+                                    <button
+                                      onClick={() => {
+                                        setSettleTo(item.memberId);
+                                        setSettleAmount(item.amount.toFixed(2));
+                                      }}
+                                      className="px-3 py-1.5 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-lg text-xs font-semibold transition-colors active:scale-95"
+                                    >
+                                      settle
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                    
                   </div>
-                )}
-                
-              </div>
-              
-              {settleTo && (
-                <div className="pt-4 border-t border-[#3A3A3C] space-y-3">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      settle amount
-                    </label>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      min="0"
-                      value={settleAmount}
-                      onChange={(e) => setSettleAmount(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
-                      placeholder="0.00"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      settling to {group?.members.find((m) => m.id === settleTo)?.name || "member"}
-                    </p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        setSettleAmount("");
-                        setSettleTo(null);
-                      }}
-                      className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
-                    >
-                      cancel
-                    </button>
-                    <button
-                      onClick={handleSettleDebt}
-                      disabled={!settleAmount || parseFloat(settleAmount) <= 0}
-                      className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
-                    >
-                      confirm
-                    </button>
-                  </div>
-                </div>
-              )}
-              
-              {/* Footer totals */}
-              {(memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
-                memberBreakdown.filter((item) => item.type === "owed").length > 0) && (
-                <div className="pt-4 border-t border-[#3A3A3C] space-y-2">
-                  {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-300 font-semibold">total to receive:</p>
-                      <p className="text-green-400 font-bold text-lg">
-                        {formatCurrency(
-                          memberBreakdown
-                            .filter((item) => item.type === "owes")
-                            .reduce((sum, item) => sum + item.amount, 0)
-                        )}
-                      </p>
+                  
+                  {settleTo && (
+                    <div className="pt-4 border-t border-[#3A3A3C] space-y-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          settle amount
+                        </label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          min="0"
+                          value={settleAmount}
+                          onChange={(e) => setSettleAmount(e.target.value)}
+                          className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+                          placeholder="0.00"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          settling to {group?.members.find((m) => m.id === settleTo)?.name || "member"}
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setSettleAmount("");
+                            setSettleTo(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+                        >
+                          cancel
+                        </button>
+                        <button
+                          onClick={handleSettleDebt}
+                          disabled={!settleAmount || parseFloat(settleAmount) <= 0}
+                          className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
+                        >
+                          confirm
+                        </button>
+                      </div>
                     </div>
                   )}
-                  {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-300 font-semibold">total to pay:</p>
-                      <p className="text-red-400 font-bold text-lg">
-                        {formatCurrency(
-                          memberBreakdown
-                            .filter((item) => item.type === "owed")
-                            .reduce((sum, item) => sum + item.amount, 0)
-                        )}
-                      </p>
-                    </div>
-                  )}
+                </>
+              )}
+            </div>
+          </div>
+          
+          {/* Sticky Footer totals */}
+          {(memberBreakdown.length > 0 && 
+            (memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
+             memberBreakdown.filter((item) => item.type === "owed").length > 0)) && (
+            <div className="sticky bottom-0 bg-[#2C2C2E] border-t border-[#3A3A3C] px-6 py-4 space-y-2 backdrop-blur-xl z-10">
+              {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-300 font-semibold">total to receive:</p>
+                  <p className="text-green-400 font-bold text-lg">
+                    {formatCurrency(
+                      memberBreakdown
+                        .filter((item) => item.type === "owes")
+                        .reduce((sum, item) => sum + item.amount, 0)
+                    )}
+                  </p>
                 </div>
               )}
-            </>
+              {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-300 font-semibold">total to pay:</p>
+                  <p className="text-red-400 font-bold text-lg">
+                    {formatCurrency(
+                      memberBreakdown
+                        .filter((item) => item.type === "owed")
+                        .reduce((sum, item) => sum + item.amount, 0)
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </Modal>
