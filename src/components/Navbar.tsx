@@ -45,12 +45,12 @@ export default function Navbar() {
               href={item.href}
               className={`flex-1 flex flex-col items-center gap-1.5 px-2 py-2 rounded-2xl transition-all active:scale-95 ${
                 item.isActive
-                  ? "text-[#FCD34D] bg-[#2C2C2E]"
+                  ? "text-[#FCD34D]"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
-              <Icon className={`w-6 h-6 ${item.isActive ? "scale-110" : ""} transition-transform`} />
-              <span className={`text-xs font-medium ${item.isActive ? "text-[#FCD34D]" : ""}`}>
+              <Icon className={`w-6 h-6 transition-colors ${item.isActive ? "text-[#FCD34D]" : ""}`} />
+              <span className={`text-xs font-medium transition-colors ${item.isActive ? "text-[#FCD34D]" : ""}`}>
                 {item.label}
               </span>
             </Link>

@@ -3,6 +3,7 @@
   "short_name": "MONO",
   "description": "never lose track of your money again",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1C1C1E",
   "theme_color": "#FCD34D",
