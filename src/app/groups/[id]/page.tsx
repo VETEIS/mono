@@ -253,6 +253,7 @@ export default function GroupPage() {
 
                   // Find who owes this member (if net > 0) or who this member owes (if net < 0)
                   let labelText = "settled";
+                  let nameListData = { displayedNames: [] as string[], remainingCount: 0 };
                   if (net.net > 0.01) {
                     // This member is owed - find members with negative nets
                     const debtors = sortedNets
@@ -260,7 +261,8 @@ export default function GroupPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (debtors.length > 0) {
-                      labelText = `owed by ${formatNameList(debtors)}`;
+                      nameListData = formatNameList(debtors);
+                      labelText = "owed by ";
                     } else {
                       labelText = "owed";
                     }
@@ -271,7 +273,8 @@ export default function GroupPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (creditors.length > 0) {
-                      labelText = `owes ${formatNameList(creditors)}`;
+                      nameListData = formatNameList(creditors);
+                      labelText = "owes ";
                     } else {
                       labelText = "owes";
                     }
@@ -283,7 +286,7 @@ export default function GroupPage() {
                       onClick={() => setSelectedMemberId(member.id)}
                       className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
                         <span className="text-xs text-gray-500 font-medium w-6">
                           {index + 1}.
                         </span>
@@ -304,9 +307,17 @@ export default function GroupPage() {
                           {net.net > 0 ? "+" : ""}
                           {formatCurrency(net.net)}
                         </p>
-                        <p className="text-xs text-gray-500">
-                          {labelText}
-                        </p>
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <p className="text-xs text-gray-500">
+                            {labelText}
+                            {nameListData.displayedNames.length > 0 && " " + nameListData.displayedNames.join(", ")}
+                          </p>
+                          {nameListData.remainingCount > 0 && (
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                              +{nameListData.remainingCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </button>
                   );
