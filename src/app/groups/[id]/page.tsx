@@ -447,7 +447,7 @@ export default function GroupPage() {
               onClick={handleApplySuggestions}
               className="flex-1 px-4 py-2 bg-[#FCD34D] hover:bg-[#FBBF24] text-[#1C1C1E] rounded-xl transition-all font-bold active:scale-95"
             >
-              apply suggestions
+              apply
             </button>
           </div>
         }
