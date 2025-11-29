@@ -131,7 +131,7 @@ export default function GroupsPage() {
         <div className="px-6 pt-6 pb-4">
           <div className="space-y-4">
             <p className="text-gray-300 text-sm">
-              are you sure you want to delete this group? this action cannot be undone. all expenses, settlements, and member data will be permanently deleted.
+              are you sure you want to delete this group? this action cannot be undone.
             </p>
           </div>
         </div>
