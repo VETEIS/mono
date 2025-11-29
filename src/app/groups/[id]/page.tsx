@@ -549,8 +549,13 @@ export default function GroupPage() {
                   </div>
                 )}
                 
-                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                  <div className="pt-3 border-t border-[#3A3A3C]">
+              </div>
+              
+              {/* Footer totals */}
+              {(memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
+                memberBreakdown.filter((item) => item.type === "owed").length > 0) && (
+                <div className="pt-4 border-t border-[#3A3A3C] space-y-2">
+                  {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
                     <div className="flex items-center justify-between">
                       <p className="text-gray-300 font-semibold">total to receive:</p>
                       <p className="text-green-400 font-bold text-lg">
@@ -561,9 +566,21 @@ export default function GroupPage() {
                         )}
                       </p>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                  {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-300 font-semibold">total to pay:</p>
+                      <p className="text-red-400 font-bold text-lg">
+                        {formatCurrency(
+                          memberBreakdown
+                            .filter((item) => item.type === "owed")
+                            .reduce((sum, item) => sum + item.amount, 0)
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               
               {settleTo && (
                 <div className="pt-4 border-t border-[#3A3A3C] space-y-3">

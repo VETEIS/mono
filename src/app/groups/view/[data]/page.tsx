@@ -23,6 +23,24 @@ export default function GroupViewPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
+  // Update document title with group name and creation/shared date
+  useEffect(() => {
+    if (group) {
+      const date = new Date(group.createdAt);
+      const dateStr = date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      document.title = `${group.name} • ${dateStr} | MONO`;
+    } else {
+      document.title = "MONO";
+    }
+  }, [group]);
+
   useEffect(() => {
     const loadGroup = async () => {
       const encodedData = params.data as string;
@@ -457,8 +475,13 @@ export default function GroupViewPage() {
                   </div>
                 )}
                 
-                {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                  <div className="pt-3 border-t border-[#3A3A3C]">
+              </div>
+              
+              {/* Footer totals */}
+              {(memberBreakdown.filter((item) => item.type === "owes").length > 0 ||
+                memberBreakdown.filter((item) => item.type === "owed").length > 0) && (
+                <div className="pt-4 border-t border-[#3A3A3C] space-y-2">
+                  {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
                     <div className="flex items-center justify-between">
                       <p className="text-gray-300 font-semibold">total to receive:</p>
                       <p className="text-green-400 font-bold text-lg">
@@ -469,9 +492,21 @@ export default function GroupViewPage() {
                         )}
                       </p>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                  {memberBreakdown.filter((item) => item.type === "owed").length > 0 && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-300 font-semibold">total to pay:</p>
+                      <p className="text-red-400 font-bold text-lg">
+                        {formatCurrency(
+                          memberBreakdown
+                            .filter((item) => item.type === "owed")
+                            .reduce((sum, item) => sum + item.amount, 0)
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
