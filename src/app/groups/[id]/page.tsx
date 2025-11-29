@@ -224,6 +224,21 @@ export default function GroupPage() {
       />
 
       <main className="p-5 space-y-6">
+        {/* Read-only Banner for Shared Groups */}
+        {group.readOnly && (
+          <Card className="bg-[#FCD34D]/10 border-[#FCD34D]/30">
+            <div className="flex items-center gap-3">
+              <Eye className="w-5 h-5 text-[#FCD34D]" />
+              <div>
+                <p className="text-sm font-semibold text-[#FCD34D]">read-only mode</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  this is a shared group. you cannot make changes to this group.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Members & Balances */}
         <div>
           <h2 className="text-xl font-bold text-gray-50 mb-4">members</h2>
@@ -298,6 +313,39 @@ export default function GroupPage() {
           </Card>
         </div>
 
+        {/* Settlement Suggestions - Show below members for read-only groups */}
+        {group.readOnly && suggestions.length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-50 mb-4">suggested settlements</h2>
+            <Card>
+              <p className="text-gray-400 text-sm mb-4">
+                minimal transfers needed to settle all balances:
+              </p>
+              <div className="space-y-3">
+                {suggestions.map((suggestion, index) => {
+                  const fromMember = group.members.find((m) => m.id === suggestion.from);
+                  const toMember = group.members.find((m) => m.id === suggestion.to);
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
+                    >
+                      <div>
+                        <p className="text-gray-50 font-medium">
+                          {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
+                        </p>
+                      </div>
+                      <p className="text-green-400 font-bold">
+                        {formatCurrency(suggestion.amount)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+        )}
+
         {/* Activities */}
         <div>
           <h2 className="text-xl font-bold text-gray-50 mb-4">activity</h2>
@@ -360,7 +408,8 @@ export default function GroupPage() {
         </div>
       </main>
 
-      {/* Settlement Suggestions Modal */}
+      {/* Settlement Suggestions Modal - Only for non-read-only groups */}
+      {!group?.readOnly && (
       <Modal
         isOpen={showSuggestions}
         onClose={() => setShowSuggestions(false)}
@@ -407,6 +456,7 @@ export default function GroupPage() {
           </div>
         </div>
       </Modal>
+      )}
 
       {/* Member Breakdown Modal */}
       <Modal
@@ -425,7 +475,9 @@ export default function GroupPage() {
             <>
               <div className="space-y-2">
                 {memberBreakdown.filter((item) => item.type === "owes").length > 0 && (
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2">receive from</h3>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-2">
+                    {group?.readOnly ? "receive from" : "receive from"}
+                  </h3>
                 )}
                 {memberBreakdown
                   .filter((item) => item.type === "owes")
