@@ -133,7 +133,7 @@ export default function SettingsPage() {
       >
         <div className="px-6 pt-6 pb-4">
           <div className="space-y-4">
-            <p className="text-gray-300 text-sm">
+            <p className="text-gray-300 text-sm text-justify">
               select a backup json file to import. this will replace all your current data including transactions, notes, budget, archives, and groups.
             </p>
             <input
@@ -170,10 +170,10 @@ export default function SettingsPage() {
       >
         <div className="px-6 pt-6 pb-4">
           <div className="space-y-4">
-            <p className="text-red-400 font-bold text-lg">
-              ⚠️ warning: this action cannot be undone!
+            <p className="text-red-400 font-bold text-lg text-justify">
+              warning: this action cannot be undone!
             </p>
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-gray-300 text-sm leading-relaxed text-justify">
               all your data (transactions, notes, budget, archives, and groups) will be permanently deleted. make sure you have exported a backup if you want to keep your data.
             </p>
           </div>

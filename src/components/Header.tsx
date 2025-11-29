@@ -21,7 +21,7 @@ export default function Header({ title, backHref, action, leftAction, titleRight
   const notesCount = notes.length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-10 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-[#3A3A3C] h-16 pt-[5px]">
+    <header className="fixed top-0 left-0 right-0 z-10 bg-[#1C1C1E] backdrop-blur-xl border-b border-[#3A3A3C] h-16 pt-[5px]">
       <div className="flex items-center justify-between px-5 h-full">
         <div className="flex items-center gap-3">
           {backHref && (

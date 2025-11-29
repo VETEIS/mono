@@ -344,7 +344,7 @@ export default function GroupPage() {
           <div>
             <h2 className="text-xl font-bold text-gray-50 mb-4">suggested settlements</h2>
             <Card>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-gray-400 text-sm mb-4 text-justify">
                 minimal transfers needed to settle all balances:
               </p>
               <div className="space-y-3">
@@ -491,7 +491,7 @@ export default function GroupPage() {
       >
         <div className="px-6 pt-6 pb-4">
           <div className="space-y-4">
-            <p className="text-gray-300 text-sm">
+            <p className="text-gray-300 text-sm text-justify">
               these are the minimal transfers needed to settle all balances:
             </p>
             <div className="space-y-3">
@@ -721,7 +721,7 @@ export default function GroupPage() {
         {group && (
           <div className="px-6 pt-6 pb-4">
             <div className="space-y-4">
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-300 text-sm text-justify">
                 share this link with your group members. they can view the group details in read-only mode.
               </p>
               
@@ -860,7 +860,7 @@ export default function GroupPage() {
         }
       >
         <div className="px-6 pt-6 pb-4">
-          <p className="text-gray-300 text-sm">
+          <p className="text-gray-300 text-sm text-justify">
             are you sure you want to delete this {deleteModal?.type === "expense" ? "expense" : "settlement"}? this action cannot be undone.
           </p>
         </div>

@@ -309,7 +309,7 @@ export default function GroupViewPage() {
           <div>
             <h2 className="text-xl font-bold text-gray-50 mb-4">suggested settlements</h2>
             <Card>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-gray-400 text-sm mb-4 text-justify">
                 minimal transfers needed to settle all balances:
               </p>
               <div className="space-y-3">
