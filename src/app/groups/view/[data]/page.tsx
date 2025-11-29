@@ -23,24 +23,6 @@ export default function GroupViewPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Update document title with group name and creation/shared date
-  useEffect(() => {
-    if (group) {
-      const date = new Date(group.createdAt);
-      const dateStr = date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      document.title = `${group.name} • ${dateStr} | MONO`;
-    } else {
-      document.title = "MONO";
-    }
-  }, [group]);
-
   useEffect(() => {
     const loadGroup = async () => {
       const encodedData = params.data as string;
