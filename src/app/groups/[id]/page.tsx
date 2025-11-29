@@ -396,30 +396,30 @@ export default function GroupPage() {
                           <p className="text-gray-50 font-medium">
                             {expense.description || "expense"}
                           </p>
-                          <div className="grid grid-cols-[1fr_20px_140px] items-center gap-1.5 mt-1">
+                          <div className="grid grid-cols-[1fr_20px] items-center gap-1.5 mt-1">
                             <div className="text-xs text-gray-500 truncate">
                               paid by <span className="text-[#FCD34D]">{paidByNames}</span>
                             </div>
                             <span className="text-xs text-gray-600 text-center">•</span>
-                            <div className="text-xs text-gray-500 whitespace-nowrap text-right">
-                              {formatDateTime(expense.date)}
-                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           <p className="text-gray-100 font-bold">{formatCurrency(expense.amount)}</p>
-                          {!group.readOnly && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteModal({ type: "expense", id: expense.id });
-                              }}
-                              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-400" />
-                            </button>
-                          )}
+                          <p className="text-xs text-gray-500 whitespace-nowrap">
+                            {formatDateTime(expense.date)}
+                          </p>
                         </div>
+                        {!group.readOnly && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({ type: "expense", id: expense.id });
+                            }}
+                            className="ml-3 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400" />
+                          </button>
+                        )}
                       </div>
                     );
                   } else {
@@ -436,32 +436,29 @@ export default function GroupPage() {
                           <p className="text-gray-50 font-medium">
                             {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
                           </p>
-                          <div className="grid grid-cols-[1fr_20px_140px] items-center gap-1.5 mt-1">
-                            <div className="text-xs text-gray-500 truncate">
-                              payment
-                            </div>
-                            <span className="text-xs text-gray-600 text-center">•</span>
-                            <div className="text-xs text-gray-500 whitespace-nowrap text-right">
-                              {formatDateTime(settlement.date)}
-                            </div>
-                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            payment
+                          </p>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           <p className="text-green-400 font-bold">
                             {formatCurrency(settlement.amount)}
                           </p>
-                          {!group.readOnly && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteModal({ type: "settlement", id: settlement.id });
-                              }}
-                              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-400" />
-                            </button>
-                          )}
+                          <p className="text-xs text-gray-500 whitespace-nowrap">
+                            {formatDateTime(settlement.date)}
+                          </p>
                         </div>
+                        {!group.readOnly && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({ type: "settlement", id: settlement.id });
+                            }}
+                            className="ml-3 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-400" />
+                          </button>
+                        )}
                       </div>
                     );
                   }
