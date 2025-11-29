@@ -228,7 +228,7 @@ export default function GroupViewPage() {
               <p className="text-gray-400 text-center py-4">no members</p>
             ) : (
               <div className="space-y-3">
-                {sortedNets.map((net) => {
+                {sortedNets.map((net, index) => {
                   const member = group.members.find((m) => m.id === net.memberId);
                   if (!member) return null;
 
@@ -263,6 +263,9 @@ export default function GroupViewPage() {
                       className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 font-medium w-6">
+                          {index + 1}.
+                        </span>
                         <span className="text-gray-50 font-medium">{member.name}</span>
                       </div>
                       <div className="text-right">
@@ -434,7 +437,7 @@ export default function GroupViewPage() {
                 )}
                 {memberBreakdown
                   .filter((item) => item.type === "owes")
-                  .map((item) => {
+                  .map((item, index) => {
                     const otherMember = group?.members.find((m) => m.id === item.memberId);
                     if (!otherMember) return null;
                     
@@ -444,6 +447,9 @@ export default function GroupViewPage() {
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
                         <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 font-medium w-6">
+                            {index + 1}.
+                          </span>
                           <div>
                             <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                             <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -463,7 +469,7 @@ export default function GroupViewPage() {
                     <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
                     {memberBreakdown
                       .filter((item) => item.type === "owed")
-                      .map((item) => {
+                      .map((item, index) => {
                         const otherMember = group?.members.find((m) => m.id === item.memberId);
                         if (!otherMember) return null;
                         
@@ -473,6 +479,9 @@ export default function GroupViewPage() {
                             className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
                           >
                             <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-500 font-medium w-6">
+                                {index + 1}.
+                              </span>
                               <div>
                                 <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1">

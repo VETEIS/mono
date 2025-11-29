@@ -103,9 +103,6 @@ export default function SettingsPage() {
               </div>
               <div>
                 <p className="font-bold text-gray-50">reset all data</p>
-                <p className="text-sm text-gray-400 mt-0.5">
-                  permanently delete all data
-                </p>
               </div>
             </div>
             <button
@@ -123,23 +120,29 @@ export default function SettingsPage() {
         isOpen={importModal}
         onClose={() => setImportModal(false)}
         title="import data"
+        footer={
+          <div className="px-6 py-4">
+            <button
+              onClick={() => setImportModal(false)}
+              className="w-full px-5 py-3 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-2xl transition-all font-semibold active:scale-95"
+            >
+              cancel
+            </button>
+          </div>
+        }
       >
-        <div className="space-y-4">
-          <p className="text-gray-300 text-sm">
-            select a backup json file to import. this will replace all your current data including transactions, notes, budget, archives, and groups.
-          </p>
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
-          />
-          <button
-            onClick={() => setImportModal(false)}
-            className="w-full px-5 py-3 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-2xl transition-all font-semibold active:scale-95"
-          >
-            cancel
-          </button>
+        <div className="px-6 pt-6 pb-4">
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm">
+              select a backup json file to import. this will replace all your current data including transactions, notes, budget, archives, and groups.
+            </p>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            />
+          </div>
         </div>
       </Modal>
 
@@ -148,15 +151,8 @@ export default function SettingsPage() {
         isOpen={resetModal}
         onClose={() => setResetModal(false)}
         title="reset all data"
-      >
-        <div className="space-y-5">
-          <p className="text-red-400 font-bold text-lg">
-            ⚠️ warning: this action cannot be undone!
-          </p>
-          <p className="text-gray-300 text-sm leading-relaxed">
-            all your data (transactions, notes, budget, archives, and groups) will be permanently deleted. make sure you have exported a backup if you want to keep your data.
-          </p>
-          <div className="flex gap-3">
+        footer={
+          <div className="flex gap-3 px-6 py-4">
             <button
               onClick={() => setResetModal(false)}
               className="flex-1 px-5 py-3 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-2xl transition-all font-semibold active:scale-95"
@@ -169,6 +165,17 @@ export default function SettingsPage() {
             >
               reset all data
             </button>
+          </div>
+        }
+      >
+        <div className="px-6 pt-6 pb-4">
+          <div className="space-y-4">
+            <p className="text-red-400 font-bold text-lg">
+              ⚠️ warning: this action cannot be undone!
+            </p>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              all your data (transactions, notes, budget, archives, and groups) will be permanently deleted. make sure you have exported a backup if you want to keep your data.
+            </p>
           </div>
         </div>
       </Modal>

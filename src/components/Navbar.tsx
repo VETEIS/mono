@@ -8,10 +8,30 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/", icon: CircleDollarSign, label: "budget" },
-    { href: "/debts", icon: CreditCard, label: "debts" },
-    { href: "/groups", icon: Users, label: "groups" },
-    { href: "/settings", icon: Settings, label: "settings" },
+    { 
+      href: "/", 
+      icon: CircleDollarSign, 
+      label: "budget",
+      isActive: pathname === "/" || pathname.startsWith("/budget")
+    },
+    { 
+      href: "/debts", 
+      icon: CreditCard, 
+      label: "debts",
+      isActive: pathname === "/debts" || pathname.startsWith("/transactions") || pathname.startsWith("/notes")
+    },
+    { 
+      href: "/groups", 
+      icon: Users, 
+      label: "groups",
+      isActive: pathname === "/groups" || pathname.startsWith("/groups/")
+    },
+    { 
+      href: "/settings", 
+      icon: Settings, 
+      label: "settings",
+      isActive: pathname === "/settings"
+    },
   ];
 
   return (
@@ -19,19 +39,18 @@ export default function Navbar() {
       <div className="flex items-center px-2 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex-1 flex flex-col items-center gap-1.5 px-2 py-2 rounded-2xl transition-all active:scale-95 ${
-                isActive
+                item.isActive
                   ? "text-[#FCD34D] bg-[#2C2C2E]"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
-              <Icon className={`w-6 h-6 ${isActive ? "scale-110" : ""} transition-transform`} />
-              <span className={`text-xs font-medium ${isActive ? "text-[#FCD34D]" : ""}`}>
+              <Icon className={`w-6 h-6 ${item.isActive ? "scale-110" : ""} transition-transform`} />
+              <span className={`text-xs font-medium ${item.isActive ? "text-[#FCD34D]" : ""}`}>
                 {item.label}
               </span>
             </Link>

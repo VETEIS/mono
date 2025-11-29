@@ -247,7 +247,7 @@ export default function GroupPage() {
               <p className="text-gray-400 text-center py-4">no members</p>
             ) : (
               <div className="space-y-3">
-                {sortedNets.map((net) => {
+                {sortedNets.map((net, index) => {
                   const member = group.members.find((m) => m.id === net.memberId);
                   if (!member) return null;
 
@@ -284,6 +284,9 @@ export default function GroupPage() {
                       className="w-full flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl hover:bg-[#2C2C2E] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 font-medium w-6">
+                          {index + 1}.
+                        </span>
                         <span className="text-gray-50 font-medium">
                           {member.name}
                         </span>
@@ -522,7 +525,7 @@ export default function GroupPage() {
                   )}
                   {memberBreakdown
                     .filter((item) => item.type === "owes")
-                    .map((item) => {
+                    .map((item, index) => {
                       const otherMember = group?.members.find((m) => m.id === item.memberId);
                       if (!otherMember) return null;
                       
@@ -532,6 +535,9 @@ export default function GroupPage() {
                           className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                         >
                           <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 font-medium w-6">
+                              {index + 1}.
+                            </span>
                             <div>
                               <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -551,7 +557,7 @@ export default function GroupPage() {
                       <h3 className="text-sm font-semibold text-gray-400 mb-2">should pay</h3>
                       {memberBreakdown
                         .filter((item) => item.type === "owed")
-                        .map((item) => {
+                        .map((item, index) => {
                           const otherMember = group?.members.find((m) => m.id === item.memberId);
                           if (!otherMember) return null;
                           
@@ -561,6 +567,9 @@ export default function GroupPage() {
                               className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl mb-2"
                             >
                               <div className="flex items-center gap-3">
+                                <span className="text-xs text-gray-500 font-medium w-6">
+                                  {index + 1}.
+                                </span>
                                 <div>
                                   <p className="text-gray-50 font-medium text-sm">{otherMember.name}</p>
                                   <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -643,64 +652,89 @@ export default function GroupPage() {
         isOpen={showShare}
         onClose={() => setShowShare(false)}
         title="share group"
+        footer={
+          <div className="px-6 py-4">
+            <button
+              onClick={() => setShowShare(false)}
+              className="w-full px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+            >
+              close
+            </button>
+          </div>
+        }
       >
         {group && (
-          <div className="space-y-4">
-            <p className="text-gray-300 text-sm mb-4">
-              share this link with your group members. they can view the group details in read-only mode.
-            </p>
-            
-            {typeof window !== "undefined" && (
-              <>
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-300">
-                    shareable link
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      ref={shareUrlRef}
-                      type="text"
-                      readOnly
-                      value={shareUrl || (isGeneratingShare ? "generating link..." : "click share button in header to generate link")}
-                      className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
-                    />
-                    <button
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        if (!shareUrl) return;
-                        
-                        // Check if Web Share API is supported (mobile devices)
-                        if (typeof navigator !== "undefined" && navigator.share) {
-                          try {
-                            await navigator.share({
-                              title: `${group.name} - Group Share`,
-                              text: `Check out this group: ${group.name}`,
-                              url: shareUrl,
-                            });
-                          } catch (err) {
-                            // User cancelled or error occurred
-                            if ((err as Error).name !== "AbortError") {
-                              console.error("Error sharing:", err);
-                              // Fallback to copy if share fails
-                              if (shareUrlRef.current) {
-                                shareUrlRef.current.select();
-                                shareUrlRef.current.setSelectionRange(0, 99999);
-                                try {
-                                  await navigator.clipboard.writeText(shareUrl);
-                                } catch {
-                                  document.execCommand("copy");
+          <div className="px-6 pt-6 pb-4">
+            <div className="space-y-4">
+              <p className="text-gray-300 text-sm">
+                share this link with your group members. they can view the group details in read-only mode.
+              </p>
+              
+              {typeof window !== "undefined" && (
+                <>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-300">
+                      shareable link
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        ref={shareUrlRef}
+                        type="text"
+                        readOnly
+                        value={shareUrl || (isGeneratingShare ? "generating link..." : "click share button in header to generate link")}
+                        className="flex-1 px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl text-gray-100 text-sm focus:outline-none"
+                      />
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          if (!shareUrl) return;
+                          
+                          // Check if Web Share API is supported (mobile devices)
+                          if (typeof navigator !== "undefined" && navigator.share) {
+                            try {
+                              await navigator.share({
+                                title: `${group.name} - Group Share`,
+                                text: `Check out this group: ${group.name}`,
+                                url: shareUrl,
+                              });
+                            } catch (err) {
+                              // User cancelled or error occurred
+                              if ((err as Error).name !== "AbortError") {
+                                console.error("Error sharing:", err);
+                                // Fallback to copy if share fails
+                                if (shareUrlRef.current) {
+                                  shareUrlRef.current.select();
+                                  shareUrlRef.current.setSelectionRange(0, 99999);
+                                  try {
+                                    await navigator.clipboard.writeText(shareUrl);
+                                  } catch {
+                                    document.execCommand("copy");
+                                  }
                                 }
                               }
                             }
-                          }
-                        } else {
-                          // Fallback for browsers that don't support Web Share API (desktop)
-                          if (shareUrlRef.current) {
-                            shareUrlRef.current.select();
-                            shareUrlRef.current.setSelectionRange(0, 99999);
-                            try {
-                              if (typeof navigator !== "undefined" && navigator.clipboard) {
-                                await navigator.clipboard.writeText(shareUrl);
+                          } else {
+                            // Fallback for browsers that don't support Web Share API (desktop)
+                            if (shareUrlRef.current) {
+                              shareUrlRef.current.select();
+                              shareUrlRef.current.setSelectionRange(0, 99999);
+                              try {
+                                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                  await navigator.clipboard.writeText(shareUrl);
+                                  const button = e.currentTarget;
+                                  const originalText = button.textContent;
+                                  if (button.textContent) {
+                                    button.textContent = "copied!";
+                                    setTimeout(() => {
+                                      button.textContent = originalText;
+                                    }, 2000);
+                                  }
+                                } else {
+                                  throw new Error("Clipboard not available");
+                                }
+                              } catch {
+                                // Fallback for older browsers
+                                document.execCommand("copy");
                                 const button = e.currentTarget;
                                 const originalText = button.textContent;
                                 if (button.textContent) {
@@ -709,62 +743,40 @@ export default function GroupPage() {
                                     button.textContent = originalText;
                                   }, 2000);
                                 }
-                              } else {
-                                throw new Error("Clipboard not available");
-                              }
-                            } catch {
-                              // Fallback for older browsers
-                              document.execCommand("copy");
-                              const button = e.currentTarget;
-                              const originalText = button.textContent;
-                              if (button.textContent) {
-                                button.textContent = "copied!";
-                                setTimeout(() => {
-                                  button.textContent = originalText;
-                                }, 2000);
                               }
                             }
                           }
-                        }
-                      }}
-                      disabled={!shareUrl}
-                      className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
-                    >
-                      <Send className="w-4 h-4" />
-                      share
-                    </button>
+                        }}
+                        disabled={!shareUrl}
+                        className="px-4 py-3 bg-[#FCD34D] hover:bg-[#FBBF24] disabled:opacity-50 disabled:cursor-not-allowed text-[#1C1C1E] rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-2"
+                      >
+                        <Send className="w-4 h-4" />
+                        share
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2 pt-4 border-t border-[#3A3A3C]">
-                  <label className="block text-sm font-semibold text-gray-300 text-center">
-                    scan qr code
-                  </label>
-                  <div className="flex justify-center p-4 bg-white rounded-xl">
-                    {shareUrl ? (
-                      <QRCodeSVG
-                        value={shareUrl}
-                        size={200}
-                        level="M"
-                        includeMargin={true}
-                      />
-                    ) : (
-                      <div className="text-center p-8 text-gray-500">
-                        <p className="text-sm">generate link to see qr code</p>
-                      </div>
-                    )}
+                  <div className="space-y-2 pt-4 border-t border-[#3A3A3C]">
+                    <label className="block text-sm font-semibold text-gray-300 text-center">
+                      scan qr code
+                    </label>
+                    <div className="flex justify-center p-4 bg-white rounded-xl">
+                      {shareUrl ? (
+                        <QRCodeSVG
+                          value={shareUrl}
+                          size={200}
+                          level="M"
+                          includeMargin={true}
+                        />
+                      ) : (
+                        <div className="text-center p-8 text-gray-500">
+                          <p className="text-sm">generate link to see qr code</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
-
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => setShowShare(false)}
-                className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
-              >
-                close
-              </button>
+                </>
+              )}
             </div>
           </div>
         )}
