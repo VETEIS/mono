@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useStore } from "@/store/useStore";
-import { formatDate } from "@/utils/format";
+import { formatDateTime } from "@/utils/format";
 import Card from "@/components/Card";
 import Header from "@/components/Header";
 import Link from "next/link";
@@ -55,7 +55,7 @@ export default function NotesPage() {
         ) : (
           sortedNotes.map((note) => (
             <Card key={note.id} hover className="border-l-4 border-l-[#FCD34D]">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center justify-between gap-4">
                 <Link
                   href={`/notes/${note.id}`}
                   className="flex-1"
@@ -64,7 +64,7 @@ export default function NotesPage() {
                     {note.text}
                   </p>
                   <p className="text-xs text-gray-400 mt-3 font-medium">
-                    {formatDate(note.date)}
+                    {formatDateTime(note.date)}
                   </p>
                 </Link>
                 <button

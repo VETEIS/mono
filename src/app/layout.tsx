@@ -13,6 +13,22 @@ const ubuntu = Ubuntu({
 export const metadata: Metadata = {
   title: "MONO",
   description: "never lose track of your money again",
+  manifest: "/manifest.json",
+  themeColor: "#FCD34D",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MONO",
+  },
+  icons: {
+    apple: "/icon-192x192.png",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
