@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import type { Transaction, TransactionType } from "@/types";
 import { formatDateInput } from "@/utils/format";
 import { ChevronDown } from "lucide-react";
+import DateInput from "./DateInput";
 
 interface TransactionFormProps {
   initialData?: Transaction;
@@ -145,11 +146,10 @@ export default function TransactionForm({
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             when
           </label>
-          <input
-            type="date"
+          <DateInput
             value={expectedDate}
-            onChange={(e) => setExpectedDate(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            onChange={(value) => setExpectedDate(value)}
+            placeholder="select date"
           />
         </div>
       )}
@@ -159,11 +159,10 @@ export default function TransactionForm({
           <label className="block text-sm font-semibold text-gray-300 mb-2.5">
             due date
           </label>
-          <input
-            type="date"
+          <DateInput
             value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full px-4 py-3.5 bg-[#1C1C1E] border border-[#3A3A3C] rounded-2xl text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FCD34D] focus:border-[#FCD34D] transition-all"
+            onChange={(value) => setDueDate(value)}
+            placeholder="select date"
           />
         </div>
       )}
