@@ -32,7 +32,7 @@ export default function BudgetArchivesPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      <Header title="archived months" backHref="/budget/transactions" />
+      <Header title="archived months" backHref="/" />
 
       <main className="p-5 space-y-3">
         {sortedArchives.length === 0 ? (

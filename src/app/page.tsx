@@ -116,7 +116,7 @@ export default function BudgetPage() {
                 <span className="text-lg font-bold text-gray-400">{currentYear}</span>
                 {budget > 0 && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                    budget set
+                    {formatCurrency(budget)}
                   </span>
                 )}
               </div>
