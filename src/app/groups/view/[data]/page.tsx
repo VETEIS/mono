@@ -284,12 +284,12 @@ export default function GroupViewPage() {
                             <>
                               {debtorsCount > 0 && (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owed by: {debtorsCount}
+                                  owed by <span className="text-[#FCD34D]">{debtorsCount}</span>
                                 </span>
                               )}
                               {creditorsCount > 0 && (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owes: {creditorsCount}
+                                  owes <span className="text-[#FCD34D]">{creditorsCount}</span>
                                 </span>
                               )}
                             </>

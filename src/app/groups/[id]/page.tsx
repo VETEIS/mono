@@ -319,12 +319,12 @@ export default function GroupPage() {
                             <>
                               {debtorsCount > 0 && (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owed by: {debtorsCount}
+                                  owed by <span className="text-[#FCD34D]">{debtorsCount}</span>
                                 </span>
                               )}
                               {creditorsCount > 0 && (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owes: {creditorsCount}
+                                  owes <span className="text-[#FCD34D]">{creditorsCount}</span>
                                 </span>
                               )}
                             </>
@@ -396,12 +396,9 @@ export default function GroupPage() {
                           <p className="text-gray-50 font-medium">
                             {expense.description || "expense"}
                           </p>
-                          <div className="grid grid-cols-[1fr_20px] items-center gap-1.5 mt-1">
-                            <div className="text-xs text-gray-500 truncate">
-                              paid by <span className="text-[#FCD34D]">{paidByNames}</span>
-                            </div>
-                            <span className="text-xs text-gray-600 text-center">•</span>
-                          </div>
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            paid by <span className="text-[#FCD34D]">{paidByNames}</span>
+                          </p>
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           <p className="text-gray-100 font-bold">{formatCurrency(expense.amount)}</p>
