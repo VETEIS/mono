@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
-import { formatCurrency, formatDate } from "@/utils/format";
+import { formatCurrency, formatDate, formatNameList, truncateName } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { fetchGroupFromGist } from "@/utils/share";
 import { useStore } from "@/store/useStore";
@@ -240,7 +240,7 @@ export default function GroupViewPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (debtors.length > 0) {
-                      labelText = `owed by ${debtors.join(", ")}`;
+                      labelText = `owed by ${formatNameList(debtors)}`;
                     } else {
                       labelText = "owed";
                     }
@@ -250,7 +250,7 @@ export default function GroupViewPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (creditors.length > 0) {
-                      labelText = `owes ${creditors.join(", ")}`;
+                      labelText = `owes ${formatNameList(creditors)}`;
                     } else {
                       labelText = "owes";
                     }
@@ -266,7 +266,7 @@ export default function GroupViewPage() {
                         <span className="text-xs text-gray-500 font-medium w-6">
                           {index + 1}.
                         </span>
-                        <span className="text-gray-50 font-medium">{member.name}</span>
+                        <span className="text-gray-50 font-medium">{truncateName(member.name, 10)}</span>
                       </div>
                       <div className="text-right">
                         <p

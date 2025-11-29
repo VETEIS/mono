@@ -7,7 +7,7 @@ import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
 import { Plus, Sparkles, Share2, ArrowRight, Send, Eye } from "lucide-react";
-import { formatCurrency, formatDate } from "@/utils/format";
+import { formatCurrency, formatDate, formatNameList, truncateName } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { createGroupGist } from "@/utils/share";
 import { useMemo, useState, useRef } from "react";
@@ -260,7 +260,7 @@ export default function GroupPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (debtors.length > 0) {
-                      labelText = `owed by ${debtors.join(", ")}`;
+                      labelText = `owed by ${formatNameList(debtors)}`;
                     } else {
                       labelText = "owed";
                     }
@@ -271,7 +271,7 @@ export default function GroupPage() {
                       .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
                       .filter(Boolean) as string[];
                     if (creditors.length > 0) {
-                      labelText = `owes ${creditors.join(", ")}`;
+                      labelText = `owes ${formatNameList(creditors)}`;
                     } else {
                       labelText = "owes";
                     }
@@ -288,7 +288,7 @@ export default function GroupPage() {
                           {index + 1}.
                         </span>
                         <span className="text-gray-50 font-medium">
-                          {member.name}
+                          {truncateName(member.name, 10)}
                         </span>
                       </div>
                       <div className="text-right">

@@ -37,3 +37,17 @@ export const formatDateTime = (dateString: string): string => {
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
 };
 
+export const formatNameList = (names: string[], maxNames: number = 3): string => {
+  if (names.length === 0) return "";
+  if (names.length <= maxNames) return names.join(", ");
+  
+  const displayedNames = names.slice(0, maxNames);
+  const remainingCount = names.length - maxNames;
+  return `${displayedNames.join(", ")} and ${remainingCount} other${remainingCount === 1 ? "" : "s"}`;
+};
+
+export const truncateName = (name: string, maxLength: number = 10): string => {
+  if (name.length <= maxLength) return name;
+  return name.slice(0, maxLength) + "...";
+};
+
