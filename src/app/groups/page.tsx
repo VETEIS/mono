@@ -64,7 +64,7 @@ export default function GroupsPage() {
                   <p className="absolute top-3 right-3 text-[10px] text-gray-500 z-0">
                     {formatDateTime(group.createdAt)}
                   </p>
-                  <div className="flex items-center gap-4 relative z-10">
+                  <div className="flex items-center gap-4 relative">
                     <Link href={`/groups/${group.id}`} className="flex-1 min-w-0">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -94,7 +94,7 @@ export default function GroupsPage() {
                         e.stopPropagation();
                         setDeleteModal(group.id);
                       }}
-                      className="relative z-10 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
+                      className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
                     >
                       <Trash2 className="w-4 h-4 text-red-400" />
                     </button>
