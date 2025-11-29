@@ -232,31 +232,40 @@ export default function GroupViewPage() {
                   const member = group.members.find((m) => m.id === net.memberId);
                   if (!member) return null;
 
-                  // Find who owes this member (if net > 0) or who this member owes (if net < 0)
+                  // Find who owes this member or who this member owes using pairwise debts
                   let labelText = "settled";
                   let nameListData = { displayedNames: [] as string[], remainingCount: 0 };
-                  if (net.net > 0.01) {
-                    const debtors = sortedNets
-                      .filter((n) => n.net < -0.01 && n.memberId !== net.memberId)
-                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
-                      .filter(Boolean) as string[];
-                    if (debtors.length > 0) {
-                      nameListData = formatNameList(debtors);
-                      labelText = "owed by ";
-                    } else {
-                      labelText = "owed";
+                  
+                  // Calculate net pairwise debts for this member
+                  const debtors: string[] = [];
+                  const creditors: string[] = [];
+                  
+                  group.members.forEach((otherMember) => {
+                    if (otherMember.id === member.id) return;
+                    
+                    const debtFromOther = pairwiseDebts[otherMember.id]?.[member.id] || 0;
+                    const debtToOther = pairwiseDebts[member.id]?.[otherMember.id] || 0;
+                    const netDebt = debtFromOther - debtToOther;
+                    
+                    if (netDebt > 0.01) {
+                      // Other member owes this member
+                      debtors.push(otherMember.name);
+                    } else if (netDebt < -0.01) {
+                      // This member owes other member
+                      creditors.push(otherMember.name);
                     }
+                  });
+                  
+                  if (debtors.length > 0) {
+                    nameListData = formatNameList(debtors);
+                    labelText = "owed by ";
+                  } else if (creditors.length > 0) {
+                    nameListData = formatNameList(creditors);
+                    labelText = "owes ";
+                  } else if (net.net > 0.01) {
+                    labelText = "owed";
                   } else if (net.net < -0.01) {
-                    const creditors = sortedNets
-                      .filter((n) => n.net > 0.01 && n.memberId !== net.memberId)
-                      .map((n) => group.members.find((m) => m.id === n.memberId)?.name)
-                      .filter(Boolean) as string[];
-                    if (creditors.length > 0) {
-                      nameListData = formatNameList(creditors);
-                      labelText = "owes ";
-                    } else {
-                      labelText = "owes";
-                    }
+                    labelText = "owes";
                   }
 
                   return (
