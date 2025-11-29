@@ -82,7 +82,7 @@ export default function BudgetPage() {
   // Get current month and year separately
   const currentMonth = useMemo(() => {
     const now = new Date();
-    return now.toLocaleString("en-US", { month: "long" });
+    return now.toLocaleString("en-US", { month: "long" }).toLowerCase();
   }, []);
   
   const currentYear = useMemo(() => {
@@ -175,7 +175,7 @@ export default function BudgetPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FCD34D]/10 hover:bg-[#FCD34D]/20 border border-[#FCD34D]/30 rounded-lg transition-all active:scale-95"
                 >
                   <span className="text-xs font-semibold text-[#FCD34D]">
-                    {budget > 0 ? formatCurrency(budget) : "set budget"}
+                    {budget > 0 ? `budget: ${formatCurrency(budget)}` : "set budget"}
                   </span>
                   <Edit2 className="w-3.5 h-3.5 text-[#FCD34D]" />
                 </button>
@@ -183,6 +183,7 @@ export default function BudgetPage() {
               
               <p className={`text-3xl font-bold mb-4 ${remainingColor}`}>
                 {formatCurrency(remaining)}
+                <span className="text-lg font-normal text-gray-500 ml-2">remaining</span>
               </p>
               
               <div className="space-y-2">
