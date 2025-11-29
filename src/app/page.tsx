@@ -109,16 +109,11 @@ export default function BudgetPage() {
       <main className="p-5 space-y-6">
         {/* Budget Card */}
         {isEditingBudget ? (
-          <Card className="border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E]">
+          <Card className="border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E] min-h-[200px]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-gray-50">{currentMonth}</h2>
                 <span className="text-lg font-bold text-gray-400">{currentYear}</span>
-                {budget > 0 && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                    {formatCurrency(budget)}
-                  </span>
-                )}
               </div>
             </div>
             <div className="space-y-3">
@@ -163,7 +158,7 @@ export default function BudgetPage() {
           >
             <Card
               hover={canAddExpense}
-              className={`border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E] ${!canAddExpense ? "opacity-60" : ""}`}
+              className={`border-[#FCD34D]/30 bg-gradient-to-br from-[#2C2C2E] to-[#1C1C1E] min-h-[200px] ${!canAddExpense ? "opacity-60" : ""}`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">

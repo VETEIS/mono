@@ -67,7 +67,7 @@ export default function BudgetTransactionsPage() {
                 <Link
                   key={tx.id}
                   href={`/budget/transactions/${tx.id}`}
-                  className={`relative grid grid-cols-[35px_1fr_28px_40px_90px_40px] items-center gap-1 sm:gap-2 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < budgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
+                  className={`relative grid grid-cols-[35px_1fr_auto_auto_90px_40px] items-center gap-1 py-2.5 px-1 hover:bg-[#2C2C2E]/50 transition-colors ${index < budgetTransactions.length - 1 ? 'border-b border-[#3A3A3C]/30' : ''}`}
                 >
                   <div className="w-[35px] flex items-center">
                     <span
@@ -80,22 +80,22 @@ export default function BudgetTransactionsPage() {
                       {tx.type === "receive" ? "in" : "out"}
                     </span>
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 pr-2">
                     <p className="text-gray-50 font-medium text-xs sm:text-sm truncate">
                       {tx.label}
                     </p>
                   </div>
-                  <div className="w-[28px]">
+                  <div className="w-[24px]">
                     <span className="text-[10px] text-gray-500 font-medium truncate block">
                       {tx.category || "-"}
                     </span>
                   </div>
-                  <div className="w-[40px] text-right">
+                  <div className="w-[32px] text-right pl-0.5">
                     <p className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
                       {formatDate(tx.date)}
                     </p>
                   </div>
-                  <div className="w-[90px] text-right">
+                  <div className="w-[90px] text-right pl-0.5">
                     <p
                       className={`text-sm sm:text-base font-bold whitespace-nowrap ${
                         tx.type === "receive"
