@@ -25,9 +25,11 @@ function NewTransactionContent() {
   return (
     <div className="min-h-screen pb-20">
       <Header title="new transaction" backHref="/debts" />
-      <main className="p-5 min-w-0 max-w-full overflow-x-hidden">
-        <Card className="min-w-0 max-w-full">
-          <TransactionForm onSubmit={handleSubmit} initialType={initialType} />
+      <main className="p-5 min-w-0 max-w-full overflow-x-hidden box-border">
+        <Card className="min-w-0 max-w-full box-border overflow-x-hidden">
+          <div className="min-w-0 max-w-full box-border overflow-x-hidden">
+            <TransactionForm onSubmit={handleSubmit} initialType={initialType} />
+          </div>
         </Card>
       </main>
     </div>

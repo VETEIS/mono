@@ -14,8 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-[#1C1C1E] text-gray-100 min-h-screen pb-20">
-        {children}
+      <body className="bg-[#1C1C1E] text-gray-100 min-h-screen pb-20 overflow-x-hidden">
+        <div className="min-w-0 max-w-full overflow-x-hidden box-border">
+          {children}
+        </div>
         <Navbar />
       </body>
     </html>
