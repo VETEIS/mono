@@ -28,6 +28,28 @@ export default function PWAMeta() {
       iconLink.setAttribute("href", "/icon-192x192.png");
       document.head.appendChild(iconLink);
     }
+
+    // Verify service worker registration in production
+    if (typeof window !== "undefined" && "serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+      window.addEventListener("load", () => {
+        // Check if service worker is already registered
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          if (registrations.length > 0) {
+            console.log("Service Worker registered:", registrations.length);
+            registrations.forEach((registration) => {
+              console.log("Service Worker scope:", registration.scope);
+            });
+          } else {
+            console.log("No Service Worker found. Waiting for next-pwa to register...");
+          }
+        });
+
+        // Listen for service worker updates
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          console.log("Service Worker controller changed");
+        });
+      });
+    }
   }, []);
 
   return null;

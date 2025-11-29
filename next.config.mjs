@@ -8,6 +8,7 @@ export default withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/middleware-manifest\.json$/],
   runtimeCaching: [
     {
       urlPattern: /^https?:\/\/.*\/_next\/static\/.*/i,
@@ -44,37 +45,41 @@ export default withPWA({
     },
     {
       urlPattern: /^https?:\/\/.*\/.*\.(?:js|css|woff|woff2|ttf|otf)/i,
-      handler: 'StaleWhileRevalidate',
+      handler: 'CacheFirst',
       options: {
         cacheName: 'static-resources',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60, // 1 day
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
         },
       },
     },
     {
       urlPattern: ({ request }) => request.mode === 'navigate',
-      handler: 'NetworkFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'pages',
         expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 1 day
+          maxEntries: 50,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
-        networkTimeoutSeconds: 3,
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
       },
     },
     {
       urlPattern: /^https?:\/\/.*/,
-      handler: 'NetworkFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'offlineCache',
         expiration: {
           maxEntries: 200,
-          maxAgeSeconds: 24 * 60 * 60, // 1 day
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
         },
-        networkTimeoutSeconds: 3,
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
       },
     },
   ],
