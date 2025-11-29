@@ -41,17 +41,4 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Date input styling - ensure it matches other inputs and displays properly */
-input[type="date"] {
-  box-sizing: border-box;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-}
 
