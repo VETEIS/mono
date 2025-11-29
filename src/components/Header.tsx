@@ -44,7 +44,7 @@ export default function Header({ title, backHref, action, leftAction, titleRight
             >
               <StickyNote className="w-6 h-6 text-[#FCD34D]" />
               {notesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#FCD34D] text-[#1C1C1E] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#FCD34D] text-[#1C1C1E] text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {notesCount > 99 ? "99+" : notesCount}
                 </span>
               )}

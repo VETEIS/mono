@@ -134,6 +134,11 @@ export const useStore = create<StoreState>()(
           .reduce((sum, tx) => sum + tx.amount, 0);
         const balance = totalIncome - totalExpenses;
 
+        // Calculate remaining balance (budget - spent)
+        // spent = totalExpenses - totalIncome (expenses subtract, income adds back)
+        const spent = totalExpenses - totalIncome;
+        const remainingBalance = Math.max(0, state.budget - spent);
+
         const archive: MonthlyArchive = {
           month,
           year,
@@ -147,6 +152,15 @@ export const useStore = create<StoreState>()(
 
         set((state) => ({
           monthlyArchives: [...state.monthlyArchives, archive],
+          budget: remainingBalance, // Set new month's budget to remaining balance
+          transactions: state.transactions.filter((tx) => {
+            // Remove budget transactions from previous month
+            if (!tx.budget) return true;
+            const txDate = new Date(tx.date);
+            return !(
+              txDate.getMonth() === month && txDate.getFullYear() === year
+            );
+          }),
           lastArchiveCheck: new Date().toISOString(),
         }));
       },

@@ -277,25 +277,22 @@ export default function GroupViewPage() {
                           {net.net > 0 ? "+" : ""}
                           {formatCurrency(net.net)}
                         </p>
-                        <div className="flex items-center gap-2 justify-end">
-                          {debtorsCount > 0 || creditorsCount > 0 ? (
-                            <>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-gray-500">owed by:</span>
-                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  {debtorsCount}
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-600">•</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-gray-500">owes:</span>
-                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  {creditorsCount}
-                                </span>
-                              </div>
-                            </>
-                          ) : (
+                        <div className="flex items-center gap-1.5 justify-end">
+                          {debtorsCount === 0 && creditorsCount === 0 ? (
                             <span className="text-xs text-gray-500">settled</span>
+                          ) : (
+                            <>
+                              {debtorsCount > 0 && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  owed by: {debtorsCount}
+                                </span>
+                              )}
+                              {creditorsCount > 0 && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  owes: {creditorsCount}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

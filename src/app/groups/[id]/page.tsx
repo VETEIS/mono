@@ -6,8 +6,8 @@ import Header from "@/components/Header";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Sparkles, Share2, ArrowRight, Send, Eye } from "lucide-react";
-import { formatCurrency, formatDate, formatNameList, truncateName } from "@/utils/format";
+import { Plus, Sparkles, Share2, ArrowRight, Send, Eye, Trash2 } from "lucide-react";
+import { formatCurrency, formatDate, formatDateTime, formatNameList, truncateName } from "@/utils/format";
 import { computeNets, suggestSettlements, computePairwiseDebts } from "@/utils/groups";
 import { createGroupGist } from "@/utils/share";
 import { useMemo, useState, useRef } from "react";
@@ -18,6 +18,8 @@ export default function GroupPage() {
   const router = useRouter();
   const groups = useStore((state) => state.groups);
   const addSettlement = useStore((state) => state.addSettlement);
+  const deleteExpense = useStore((state) => state.deleteExpense);
+  const deleteSettlement = useStore((state) => state.deleteSettlement);
   const group = groups.find((g) => g.id === params.id as string);
   
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -27,6 +29,7 @@ export default function GroupPage() {
   const [isGeneratingShare, setIsGeneratingShare] = useState(false);
   const [settleAmount, setSettleAmount] = useState("");
   const [settleTo, setSettleTo] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ type: "expense" | "settlement"; id: string } | null>(null);
   const shareUrlRef = useRef<HTMLInputElement>(null);
 
   const nets = useMemo(() => {
@@ -144,6 +147,17 @@ export default function GroupPage() {
     setSettleTo(null);
   };
 
+  const handleDelete = () => {
+    if (!group || !deleteModal) return;
+    
+    if (deleteModal.type === "expense") {
+      deleteExpense(group.id, deleteModal.id);
+    } else {
+      deleteSettlement(group.id, deleteModal.id);
+    }
+    
+    setDeleteModal(null);
+  };
 
   if (!group) {
     return (
@@ -298,25 +312,22 @@ export default function GroupPage() {
                           {net.net > 0 ? "+" : ""}
                           {formatCurrency(net.net)}
                         </p>
-                        <div className="flex items-center gap-2 justify-end">
-                          {debtorsCount > 0 || creditorsCount > 0 ? (
-                            <>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-gray-500">owed by:</span>
-                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  {debtorsCount}
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-600">•</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-gray-500">owes:</span>
-                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  {creditorsCount}
-                                </span>
-                              </div>
-                            </>
-                          ) : (
+                        <div className="flex items-center gap-1.5 justify-end">
+                          {debtorsCount === 0 && creditorsCount === 0 ? (
                             <span className="text-xs text-gray-500">settled</span>
+                          ) : (
+                            <>
+                              {debtorsCount > 0 && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  owed by: {debtorsCount}
+                                </span>
+                              )}
+                              {creditorsCount > 0 && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  owes: {creditorsCount}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -381,15 +392,34 @@ export default function GroupPage() {
                         key={activity.id}
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="text-gray-50 font-medium">
                             {expense.description || "expense"}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            paid by {paidByNames} • {formatDate(expense.date)}
-                          </p>
+                          <div className="grid grid-cols-[1fr_20px_140px] items-center gap-1.5 mt-1">
+                            <div className="text-xs text-gray-500 truncate">
+                              paid by <span className="text-[#FCD34D]">{paidByNames}</span>
+                            </div>
+                            <span className="text-xs text-gray-600 text-center">•</span>
+                            <div className="text-xs text-gray-500 whitespace-nowrap text-right">
+                              {formatDateTime(expense.date)}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-gray-100 font-bold">{formatCurrency(expense.amount)}</p>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <p className="text-gray-100 font-bold">{formatCurrency(expense.amount)}</p>
+                          {!group.readOnly && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteModal({ type: "expense", id: expense.id });
+                              }}
+                              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   } else {
@@ -402,17 +432,36 @@ export default function GroupPage() {
                         key={activity.id}
                         className="flex items-center justify-between p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-xl"
                       >
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="text-gray-50 font-medium">
                             {fromMember?.name || "unknown"} → {toMember?.name || "unknown"}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            payment • {formatDate(settlement.date)}
-                          </p>
+                          <div className="grid grid-cols-[1fr_20px_140px] items-center gap-1.5 mt-1">
+                            <div className="text-xs text-gray-500 truncate">
+                              payment
+                            </div>
+                            <span className="text-xs text-gray-600 text-center">•</span>
+                            <div className="text-xs text-gray-500 whitespace-nowrap text-right">
+                              {formatDateTime(settlement.date)}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-green-400 font-bold">
-                          {formatCurrency(settlement.amount)}
-                        </p>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <p className="text-green-400 font-bold">
+                            {formatCurrency(settlement.amount)}
+                          </p>
+                          {!group.readOnly && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteModal({ type: "settlement", id: settlement.id });
+                              }}
+                              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   }
@@ -792,6 +841,35 @@ export default function GroupPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal !== null}
+        onClose={() => setDeleteModal(null)}
+        title={deleteModal?.type === "expense" ? "delete expense" : "delete settlement"}
+        footer={
+          <div className="flex gap-3 px-6 py-4">
+            <button
+              onClick={() => setDeleteModal(null)}
+              className="flex-1 px-4 py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-gray-300 rounded-xl transition-all font-semibold active:scale-95"
+            >
+              cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all font-semibold active:scale-95"
+            >
+              delete
+            </button>
+          </div>
+        }
+      >
+        <div className="px-6 pt-6 pb-4">
+          <p className="text-gray-300 text-sm">
+            are you sure you want to delete this {deleteModal?.type === "expense" ? "expense" : "settlement"}? this action cannot be undone.
+          </p>
+        </div>
       </Modal>
     </div>
   );

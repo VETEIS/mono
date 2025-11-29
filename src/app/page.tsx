@@ -18,7 +18,7 @@ export default function BudgetPage() {
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState(budget.toString());
 
-  // Check and archive on mount
+  // Check and archive on mount (only runs on budget pages)
   useEffect(() => {
     checkAndArchive();
   }, [checkAndArchive]);

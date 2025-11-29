@@ -15,7 +15,7 @@ export default function BudgetTransactionsPage() {
   const checkAndArchive = useStore((state) => state.checkAndArchive);
   const [deleteModal, setDeleteModal] = useState<string | null>(null);
 
-  // Check and archive on mount
+  // Check and archive on mount (only runs on budget pages)
   useEffect(() => {
     checkAndArchive();
   }, [checkAndArchive]);
