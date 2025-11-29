@@ -251,13 +251,9 @@ export default function GroupPage() {
                   const member = group.members.find((m) => m.id === net.memberId);
                   if (!member) return null;
 
-                  // Find who owes this member or who this member owes using pairwise debts
-                  let labelText = "settled";
-                  let nameListData = { displayedNames: [] as string[], remainingCount: 0 };
-                  
-                  // Calculate net pairwise debts for this member
-                  const debtors: string[] = [];
-                  const creditors: string[] = [];
+                  // Calculate count of members who owe this member and who this member owes
+                  let debtorsCount = 0;
+                  let creditorsCount = 0;
                   
                   group.members.forEach((otherMember) => {
                     if (otherMember.id === member.id) return;
@@ -268,24 +264,12 @@ export default function GroupPage() {
                     
                     if (netDebt > 0.01) {
                       // Other member owes this member
-                      debtors.push(otherMember.name);
+                      debtorsCount++;
                     } else if (netDebt < -0.01) {
                       // This member owes other member
-                      creditors.push(otherMember.name);
+                      creditorsCount++;
                     }
                   });
-                  
-                  if (debtors.length > 0) {
-                    nameListData = formatNameList(debtors);
-                    labelText = "owed by ";
-                  } else if (creditors.length > 0) {
-                    nameListData = formatNameList(creditors);
-                    labelText = "owes ";
-                  } else if (net.net > 0.01) {
-                    labelText = "owed";
-                  } else if (net.net < -0.01) {
-                    labelText = "owes";
-                  }
 
                   return (
                     <button
@@ -314,15 +298,25 @@ export default function GroupPage() {
                           {net.net > 0 ? "+" : ""}
                           {formatCurrency(net.net)}
                         </p>
-                        <div className="flex items-center gap-1.5 justify-end">
-                          <p className="text-xs text-gray-500">
-                            {labelText}
-                            {nameListData.displayedNames.length > 0 && " " + nameListData.displayedNames.join(", ")}
-                          </p>
-                          {nameListData.remainingCount > 0 && (
-                            <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                              +{nameListData.remainingCount}
-                            </span>
+                        <div className="flex items-center gap-2 justify-end">
+                          {debtorsCount > 0 || creditorsCount > 0 ? (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">owed by:</span>
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  {debtorsCount}
+                                </span>
+                              </div>
+                              <span className="text-xs text-gray-600">•</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">owes:</span>
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                                  {creditorsCount}
+                                </span>
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-500">settled</span>
                           )}
                         </div>
                       </div>
