@@ -37,7 +37,8 @@ export default function ServiceWorkerRegistration() {
             await registration.update();
             return; // Successfully registered, exit
           } catch (error) {
-            console.log(`⚠️ Failed to register ${swPath}:`, error.message);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.log(`⚠️ Failed to register ${swPath}:`, errorMessage);
             continue; // Try next path
           }
         }
