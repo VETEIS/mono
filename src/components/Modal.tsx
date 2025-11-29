@@ -8,9 +8,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  footer?: ReactNode;
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -33,7 +34,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         className="bg-[#2C2C2E] rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col border border-[#3A3A3C] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-[#2C2C2E] border-b border-[#3A3A3C] px-6 py-4 flex items-center justify-between backdrop-blur-xl z-10">
+        <div className="bg-[#2C2C2E] border-b border-[#3A3A3C] px-6 py-4 flex items-center justify-between backdrop-blur-xl z-10 rounded-t-3xl">
           <h2 className="text-xl font-bold text-gray-50">{title}</h2>
           <button
             onClick={onClose}
@@ -43,6 +44,11 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           </button>
         </div>
         <div className="flex-1 overflow-y-auto">{children}</div>
+        {footer && (
+          <div className="bg-[#2C2C2E] border-t border-[#3A3A3C] backdrop-blur-xl z-10 rounded-b-3xl">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
