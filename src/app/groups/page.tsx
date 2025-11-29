@@ -7,7 +7,7 @@ import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import Link from "next/link";
 import { Plus, Users, Trash2, Eye } from "lucide-react";
-import { formatDate } from "@/utils/format";
+import { formatDateTime } from "@/utils/format";
 
 export default function GroupsPage() {
   const groups = useStore((state) => state.groups);
@@ -60,8 +60,11 @@ export default function GroupsPage() {
           <div className="space-y-4">
             {groups.map((group) => {
               return (
-                <Card key={group.id} hover>
-                  <div className="flex items-center gap-4">
+                <Card key={group.id} hover className="relative">
+                  <p className="absolute top-3 right-3 text-[10px] text-gray-500 z-0">
+                    {formatDateTime(group.createdAt)}
+                  </p>
+                  <div className="flex items-center gap-4 relative z-10">
                     <Link href={`/groups/${group.id}`} className="flex-1 min-w-0">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -83,9 +86,6 @@ export default function GroupsPage() {
                             {group.expenses.length} expenses
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1.5">
-                          created {formatDate(group.createdAt)}
-                        </p>
                       </div>
                     </Link>
                     <button
