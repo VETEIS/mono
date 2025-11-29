@@ -79,10 +79,10 @@ export default function GroupsPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-xs font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                          <span className="text-xs font-semibold px-2 py-0.5 bg-[#FCD34D]/10 text-[#FCD34D] rounded-lg">
                             {group.members.length} members
                           </span>
-                          <span className="text-xs font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
+                          <span className="text-xs font-semibold px-2 py-0.5 bg-red-500/20 text-red-400 rounded-lg">
                             {group.expenses.length} expenses
                           </span>
                         </div>

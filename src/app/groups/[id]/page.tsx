@@ -318,13 +318,13 @@ export default function GroupPage() {
                           ) : (
                             <>
                               {debtorsCount > 0 && (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owed by <span className="text-[#FCD34D]">{debtorsCount}</span>
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-green-500/20 text-green-400 rounded-lg">
+                                  owed by {debtorsCount}
                                 </span>
                               )}
                               {creditorsCount > 0 && (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded-lg">
-                                  owes <span className="text-[#FCD34D]">{creditorsCount}</span>
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-red-500/20 text-red-400 rounded-lg">
+                                  owes {creditorsCount}
                                 </span>
                               )}
                             </>
